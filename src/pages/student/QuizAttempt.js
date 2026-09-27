@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
+import CelebrationModal from '../../components/CelebrationModal';
 import {
   HiChevronRight, HiChevronLeft, HiCheckCircle, HiXCircle,
   HiClock, HiClipboardList, HiLightningBolt, HiAcademicCap,
-  HiTrendingUp, HiArrowRight,
+  HiTrendingUp, HiArrowRight, HiSparkles,
 } from 'react-icons/hi';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -131,15 +133,135 @@ const QuestionCard = ({ question, qIdx, total, selected, onSelect }) => (
   </div>
 );
 
+// ─── Adaptation plan panel ────────────────────────────────────────────────────
+const AdaptationPanel = ({ plan, moduleId }) => {
+  if (!plan || !plan.hasGap) return null;
+
+  const actionLabel = {
+    remediate: 'Remediation Recommended',
+    reinforce: 'Reinforcement Recommended',
+    advance:   'Ready to Advance',
+  }[plan.action] || 'Adaptive Recommendation';
+
+  const actionColor = {
+    remediate: '#ef4444',
+    reinforce: '#f59e0b',
+    advance:   'var(--success)',
+  }[plan.action] || 'var(--info)';
+
+  const strategyLabel = {
+    worked_examples:          'Worked Examples',
+    remedial_explanation:     'Remedial Explanation',
+    misconception_correction: 'Misconception Correction',
+    targeted_practice:        'Targeted Practice',
+    advanced_practice:        'Advanced Practice',
+  }[plan.contentStrategy] || plan.contentStrategy;
+
+  const formatLabel = {
+    mcq:            'Multiple Choice',
+    short_answer:   'Short Answer',
+    code_completion:'Code Completion',
+    code_tracing:   'Code Tracing',
+    debugging:      'Debugging',
+    scenario_based: 'Scenario-Based',
+  }[plan.assessmentFormat] || plan.assessmentFormat;
+
+  return (
+    <div style={{ border: `1px solid ${actionColor}`, borderLeft: `4px solid ${actionColor}`, borderRadius: 10, padding: '1.25rem', background: 'white', marginBottom: '1.25rem', animation: 'slideUp 0.3s ease' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+        <HiAcademicCap style={{ color: actionColor, fontSize: '1.1rem', flexShrink: 0 }} />
+        <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>{actionLabel}</span>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem', marginBottom: '0.875rem' }}>
+        {[
+          { label: 'Topic',      value: plan.topicTitle },
+          { label: 'Mastery',    value: `${Math.round(plan.mastery * 100)}%` },
+          { label: 'Strategy',   value: strategyLabel },
+          { label: 'Format',     value: formatLabel },
+          { label: 'Bloom Level', value: plan.bloomLevel },
+          { label: 'Difficulty', value: plan.difficulty },
+        ].map(({ label, value }) => (
+          <div key={label} style={{ padding: '0.4rem 0.6rem', background: 'var(--bg)', borderRadius: 6 }}>
+            <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>{label}</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)', textTransform: 'capitalize' }}>{value}</div>
+          </div>
+        ))}
+      </div>
+
+      {plan.reason && (
+        <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.55, marginBottom: '0.875rem' }}>
+          {plan.reason}
+        </p>
+      )}
+
+      {/* CTA — links to the actual adaptive practice page targeted to this topic */}
+      {moduleId && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <Link
+            to={`/student/adaptive/${moduleId}${plan?.topicId ? `?topicId=${plan.topicId}&forceNew=true` : ''}`}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+              padding: '0.6rem 1.15rem', borderRadius: 8, fontWeight: 700,
+              fontSize: '0.86rem', textDecoration: 'none',
+              background: actionColor, color: '#fff',
+              transition: 'opacity 0.15s',
+              alignSelf: 'flex-start',
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+          >
+            <HiLightningBolt /> Start Targeted Practice on {plan.topicTitle || 'Weak Concept'} <HiArrowRight />
+          </Link>
+
+          {plan.allGaps?.length > 1 && (
+            <div style={{ marginTop: '0.25rem', paddingTop: '0.65rem', borderTop: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.4rem' }}>
+                Other Concepts Needing Practice:
+              </div>
+              <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                {plan.allGaps.slice(1).map((gap, i) => (
+                  <Link
+                    key={i}
+                    to={`/student/adaptive/${moduleId}?topicId=${gap.topicId}&forceNew=true`}
+                    style={{
+                      fontSize: '0.76rem',
+                      padding: '0.3rem 0.65rem',
+                      borderRadius: 6,
+                      background: '#f8fafc',
+                      color: 'var(--navy)',
+                      textDecoration: 'none',
+                      fontWeight: 600,
+                      border: '1px solid var(--border)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.3rem',
+                    }}
+                  >
+                    🎯 {gap.topicTitle} ({Math.round(gap.mastery * 100)}%)
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 // ─── Result screen ────────────────────────────────────────────────────────────
-const ResultScreen = ({ result, quiz, timeTaken, onRetry }) => {
+const ResultScreen = ({ result, quiz, timeTaken, onReopenCelebration }) => {
   const { percentage, recommendedDifficulty, message } = result.feedback;
+  const adaptation = result.adaptation;
+  const gamification = result.gamification;
+  // moduleId from quiz (most reliable) or result fallback
+  const moduleId = quiz?.moduleId?._id || quiz?.moduleId || result.result?.moduleId;
   const [showBreakdown, setShowBreakdown] = useState(false);
   const navigate = useNavigate();
 
   const scoreLabel =
-    percentage >= 70 ? 'Excellent' :
-    percentage >= 40 ? 'Good Effort' : 'Keep Practising';
+    percentage >= 70 ? 'Excellent!' :
+    percentage >= 40 ? 'Good Effort!' : 'Keep Practising!';
 
   // Build answered question details from quiz + submitted answers
   const breakdown = quiz.questions.map((q, i) => {
@@ -187,6 +309,78 @@ const ResultScreen = ({ result, quiz, timeTaken, onRetry }) => {
         </h2>
         <p style={{ fontSize: '0.9rem', color: 'var(--text-sub)', marginBottom: '1.25rem' }}>{message}</p>
 
+        {/* Gamification summary pill if available */}
+        {gamification && (
+          <div style={{
+            background: 'linear-gradient(135deg, #1a1d2e 0%, #222639 100%)',
+            borderRadius: 12,
+            padding: '0.85rem 1.25rem',
+            color: '#fff',
+            marginBottom: '1.25rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            border: '1.5px solid rgba(74, 222, 128, 0.4)',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{
+                width: 38,
+                height: 38,
+                borderRadius: '50%',
+                background: 'rgba(74, 222, 128, 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.2rem',
+              }}>
+                ⚡
+              </div>
+              <div style={{ textAlign: 'left' }}>
+                <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--green)' }}>
+                  +{gamification.xpEarned || 50} XP Awarded!
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-nav)' }}>
+                  Level {gamification.level || 1} · {gamification.levelTitle || 'Coder'}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                background: 'rgba(255,255,255,0.08)',
+                padding: '0.35rem 0.75rem',
+                borderRadius: 20,
+              }}>
+                <span>🔥</span>
+                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#f59e0b' }}>
+                  {gamification.streak || 1}d Streak
+                </span>
+              </div>
+              {onReopenCelebration && (
+                <button
+                  onClick={onReopenCelebration}
+                  style={{
+                    background: 'none',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    color: '#fff',
+                    borderRadius: 8,
+                    padding: '0.35rem 0.6rem',
+                    fontSize: '0.75rem',
+                    cursor: 'pointer',
+                  }}
+                  title="View Rewards"
+                >
+                  🎉
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Stats row */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', marginBottom: '1.25rem' }}>
           {[
@@ -211,11 +405,23 @@ const ResultScreen = ({ result, quiz, timeTaken, onRetry }) => {
           <button className="btn btn-secondary" onClick={() => setShowBreakdown(v => !v)} style={{ fontSize: '0.85rem' }}>
             {showBreakdown ? 'Hide' : 'View'} Answer Breakdown
           </button>
-          <Link to="/student/modules" className="btn btn-primary" style={{ fontSize: '0.85rem' }}>
+          {moduleId && (
+            <Link
+              to={`/student/adaptive/${moduleId}${adaptation?.topicId ? `?topicId=${adaptation.topicId}&forceNew=true` : ''}`}
+              className="btn btn-primary"
+              style={{ fontSize: '0.85rem', background: 'var(--green)', color: 'var(--navy)', fontWeight: 700 }}
+            >
+              <HiLightningBolt /> Adaptive Skill Arena (+50 XP)
+            </Link>
+          )}
+          <Link to="/student/modules" className="btn btn-secondary" style={{ fontSize: '0.85rem' }}>
             Browse Modules <HiArrowRight />
           </Link>
         </div>
       </div>
+
+      {/* Adaptation recommendation */}
+      <AdaptationPanel plan={adaptation} moduleId={moduleId} />
 
       {/* Answer breakdown */}
       {showBreakdown && (
@@ -276,6 +482,7 @@ const ResultScreen = ({ result, quiz, timeTaken, onRetry }) => {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 const QuizAttempt = () => {
   const { id } = useParams();
+  const { updateGamification } = useAuth();
   const [quiz, setQuiz]           = useState(null);
   const [answers, setAnswers]     = useState({});
   const [current, setCurrent]     = useState(0);
@@ -285,6 +492,8 @@ const QuizAttempt = () => {
   const [submitting, setSubmitting] = useState(false);
   const [timeLeft, setTimeLeft]   = useState(null);
   const [totalTime, setTotalTime] = useState(null);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [gamificationData, setGamificationData] = useState(null);
   const startTime = useRef(Date.now());
   const timerRef  = useRef(null);
 
@@ -311,11 +520,16 @@ const QuizAttempt = () => {
       const { data } = await api.post('/results/submit', { quizId: id, answers: payload, timeTaken });
       setResult({ ...data, timeTaken });
       setSubmitted(true);
+      if (data.gamification) {
+        setGamificationData(data.gamification);
+        if (updateGamification) updateGamification(data.gamification);
+        setShowCelebration(true);
+      }
     } catch (err) {
       alert(err.response?.data?.message || 'Submission failed. Please try again.');
       setSubmitting(false);
     }
-  }, [submitting, quiz, answers, id]);
+  }, [submitting, quiz, answers, id, updateGamification]);
 
   useEffect(() => {
     if (timeLeft === null || submitted) return;
@@ -331,10 +545,22 @@ const QuizAttempt = () => {
     const timeTaken = result.timeTaken ?? Math.round((Date.now() - startTime.current) / 1000);
     return (
       <div>
+        <CelebrationModal
+          isOpen={showCelebration}
+          onClose={() => setShowCelebration(false)}
+          gamification={gamificationData || result.gamification}
+          title="Quiz Challenge Complete!"
+          subtitle={`You scored ${result.feedback?.percentage ?? 0}% and earned XP!`}
+        />
         <div className="page-header">
           <h1 className="page-title">Quiz Complete</h1>
         </div>
-        <ResultScreen result={result} quiz={quiz} timeTaken={timeTaken} />
+        <ResultScreen
+          result={result}
+          quiz={quiz}
+          timeTaken={timeTaken}
+          onReopenCelebration={() => setShowCelebration(true)}
+        />
       </div>
     );
   }

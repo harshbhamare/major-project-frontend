@@ -4,7 +4,10 @@ import { useAuth } from '../context/AuthContext';
 import {
   HiChartBar, HiUsers, HiUpload, HiFolder, HiBookOpen,
   HiTrendingUp, HiHome, HiAcademicCap, HiLogout, HiCollection,
+  HiLightningBolt,
 } from 'react-icons/hi';
+
+import GamificationBar from './GamificationBar';
 
 const navConfig = {
   admin: [
@@ -20,9 +23,10 @@ const navConfig = {
     { to: '/faculty/results', icon: HiTrendingUp,  label: 'Results' },
   ],
   student: [
-    { to: '/student',         icon: HiHome,        label: 'Dashboard', end: true },
-    { to: '/student/modules', icon: HiBookOpen,    label: 'Modules' },
-    { to: '/student/results', icon: HiChartBar,    label: 'My Results' },
+    { to: '/student',          icon: HiHome,          label: 'Dashboard',         end: true },
+    { to: '/student/modules',  icon: HiBookOpen,       label: 'Modules' },
+    { to: '/student/adaptive', icon: HiLightningBolt,  label: 'Adaptive Practice' },
+    { to: '/student/results',  icon: HiChartBar,       label: 'My Results' },
   ],
 };
 
@@ -83,9 +87,12 @@ const Layout = () => {
         </div>
       </aside>
 
-      <main className="main-content">
-        <Outlet />
-      </main>
+      <div style={{ marginLeft: 'var(--sidebar-w)', flex: 1, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        {user?.role === 'student' && <GamificationBar />}
+        <main className="main-content" style={{ marginLeft: 0, flex: 1 }}>
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 };

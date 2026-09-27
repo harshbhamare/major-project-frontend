@@ -1434,6 +1434,59 @@ tr:hover td {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.85) translateY(20px); }
+  70% { transform: scale(1.03) translateY(-4px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes bounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-8px); }
+}
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 10px rgba(74, 222, 128, 0.3); }
+  50% { box-shadow: 0 0 22px rgba(74, 222, 128, 0.7); }
+}
+@keyframes flameWiggle {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.1) rotate(-6deg); }
+  75% { transform: scale(1.1) rotate(6deg); }
+}
+
+/* ─── GAMIFICATION & CONFETTI ────────────────────────────────────────────── */
+.confetti-container {
+  top: 50%;
+  left: 50%;
+  width: 1px;
+  height: 1px;
+}
+
+.confetti-particle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  opacity: 0;
+  animation: confettiExplode 2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes confettiExplode {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx, 120px), var(--ty, -150px)) rotate(var(--rot, 360deg)) scale(0.5);
+  }
+}
+
+.confetti-particle.p-0 { --tx: -140px; --ty: -180px; --rot: 240deg; background: #ef4444; }
+.confetti-particle.p-1 { --tx: 130px;  --ty: -160px; --rot: -180deg; background: #3b82f6; }
+.confetti-particle.p-2 { --tx: -100px; --ty: 120px;  --rot: 300deg;  background: #10b981; }
+.confetti-particle.p-3 { --tx: 110px;  --ty: 140px;  --rot: -220deg; background: #f59e0b; }
+.confetti-particle.p-4 { --tx: -170px; --ty: -30px;  --rot: 180deg;  background: #8b5cf6; }
+.confetti-particle.p-5 { --tx: 160px;  --ty: -40px;  --rot: -320deg; background: #ec4899; }
 
 /* ─── RESPONSIVE ─────────────────────────────────────────────────────────── */
 @media (max-width: 700px) {
@@ -1443,3 +1496,4 @@ tr:hover td {
   .modal-box-wide        { max-width: 100%; }
   .stats-grid            { grid-template-columns: repeat(2, 1fr); }
 }
+

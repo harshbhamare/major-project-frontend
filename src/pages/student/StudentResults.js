@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
-import { HiClipboardList, HiClock, HiBookOpen } from 'react-icons/hi';
+import { HiClipboardList, HiClock, HiBookOpen, HiLightningBolt } from 'react-icons/hi';
 
 const StudentResults = () => {
   const [results, setResults] = useState([]);
@@ -86,8 +86,35 @@ const StudentResults = () => {
                   </span>
                 </div>
                 {r.weakTopics?.length > 0 && (
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    Weak: {r.weakTopics.map(t => t.title).join(', ')}
+                  <div style={{ width: '100%', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--danger)' }}>
+                      Needs Practice:
+                    </span>
+                    {r.weakTopics.map((t, idx) => {
+                      const modId = r.moduleId?._id || r.moduleId;
+                      return (
+                        <Link
+                          key={idx}
+                          to={modId ? `/student/adaptive/${modId}?topicId=${t._id}&forceNew=true` : `/student/adaptive`}
+                          style={{
+                            fontSize: '0.74rem',
+                            fontWeight: 700,
+                            padding: '0.2rem 0.55rem',
+                            borderRadius: 6,
+                            background: '#fef2f2',
+                            color: '#b91c1c',
+                            border: '1px solid #fecaca',
+                            textDecoration: 'none',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          <HiLightningBolt style={{ fontSize: '0.8rem' }} /> {t.title} ➔
+                        </Link>
+                      );
+                    })}
                   </div>
                 )}
               </div>

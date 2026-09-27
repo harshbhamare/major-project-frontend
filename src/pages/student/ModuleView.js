@@ -18,6 +18,96 @@ const parseSummary = (raw) => {
   return { summary: raw, explanation: '', realWorldExample: '', keyPoints: [], watchOut: '' };
 };
 
+// ─── Mastery mini-bar ─────────────────────────────────────────────────────────
+const MasteryMini = ({ mastery, state }) => {
+  const color = state === 'mastered' ? 'var(--success)' : state === 'developing' ? 'var(--warning)' : 'var(--danger)';
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.15rem' }}>
+      <div style={{ width: 40, height: 3, background: 'var(--border)', borderRadius: 999, overflow: 'hidden' }}>
+        <div style={{ height: '100%', width: `${Math.round(mastery * 100)}%`, background: color, borderRadius: 999 }} />
+      </div>
+      <span style={{ fontSize: '0.65rem', color, fontWeight: 700 }}>{Math.round(mastery * 100)}%</span>
+    </div>
+  );
+};
+
+// ─── Adaptive content panel ───────────────────────────────────────────────────
+const AdaptiveContentPanel = ({ plan, moduleId }) => {
+  if (!plan) return null;
+
+  if (plan.hasGap) {
+    const actionColor = plan.action === 'remediate' ? '#ef4444' : plan.action === 'reinforce' ? '#f59e0b' : 'var(--success)';
+    const actionLabel = plan.action === 'remediate' ? '🐞 Bug/Gap Detected (+75 XP)' : plan.action === 'reinforce' ? '⚡ Skill Level-Up (+50 XP)' : '🌟 Mastery Advance (+75 XP)';
+
+    return (
+      <div style={{ border: `1px solid ${actionColor}33`, borderLeft: `4px solid ${actionColor}`, borderRadius: 10, padding: '1rem', background: '#fff', marginBottom: '1.25rem', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
+        <div style={{ fontSize: '0.68rem', fontWeight: 800, color: actionColor, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.25rem' }}>
+          {actionLabel}
+        </div>
+        <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--text)', marginBottom: '0.2rem' }}>
+          {plan.topicTitle}
+        </div>
+        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
+          Mastery: <strong>{Math.round(plan.mastery * 100)}%</strong> · Trend: {plan.trend} · Level: {plan.difficulty}
+        </div>
+        <Link
+          to={`/student/adaptive/${moduleId}?topicId=${plan.topicId}&forceNew=true`}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+            padding: '0.5rem 0.95rem', borderRadius: 7,
+            background: actionColor, color: '#fff',
+            fontWeight: 700, fontSize: '0.8rem', textDecoration: 'none',
+            transition: 'opacity 0.15s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
+          onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+        >
+          <HiLightningBolt /> Launch Targeted Practice
+        </Link>
+      </div>
+    );
+  }
+
+  if (plan.noActionReason === 'all_mastered') {
+    return (
+      <div style={{ border: '1px solid rgba(34,197,94,0.3)', borderLeft: '4px solid var(--success)', borderRadius: 10, padding: '1rem', background: '#f0fdf4', marginBottom: '1.25rem' }}>
+        <div style={{ fontSize: '0.68rem', fontWeight: 800, color: 'var(--success)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.25rem' }}>
+          All Mastered
+        </div>
+        <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text)', marginBottom: '0.5rem' }}>
+          Topics Mastered (≥80%)
+        </div>
+        <Link
+          to={`/student/adaptive/${moduleId}?allowAdvance=true`}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+            padding: '0.45rem 0.9rem', borderRadius: 7,
+            background: 'var(--green)', color: 'var(--navy)',
+            fontWeight: 800, fontSize: '0.78rem', textDecoration: 'none',
+          }}
+        >
+          <HiLightningBolt /> Mastery Challenge
+        </Link>
+      </div>
+    );
+  }
+
+  if (plan.noActionReason === 'insufficient_data') {
+    return (
+      <div style={{ border: '1px solid var(--border)', borderLeft: '4px solid var(--navy)', borderRadius: 10, padding: '1rem', background: '#fff', marginBottom: '1.25rem' }}>
+        <div style={{ fontSize: '0.68rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.25rem' }}>
+          Adaptive Learning
+        </div>
+        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+          Take quizzes on this module (3+ attempts per topic) to unlock personalized adaptive practice.
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+};
+
 // ─── Difficulty colour map ────────────────────────────────────────────────────
 const DIFF = {
   easy:     { badge: 'success', label: 'Foundational' },
@@ -61,7 +151,7 @@ const TopicItem = ({ topic, idx, active, completed, onClick }) => (
 );
 
 // ─── Rich topic content ───────────────────────────────────────────────────────
-const TopicContent = ({ topic, idx, total, onPrev, onNext }) => {
+const TopicContent = ({ topic, idx, total, onPrev, onNext, moduleId }) => {
   const content = parseSummary(topic.summary);
   const diff = DIFF[topic.difficulty] || DIFF.normal;
 
@@ -69,8 +159,8 @@ const TopicContent = ({ topic, idx, total, onPrev, onNext }) => {
     <div className="card" style={{ minHeight: 480 }}>
       {/* Header */}
       <div style={{ borderBottom: '1px solid var(--border)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
-          <div style={{ flex: 1 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 200 }}>
             <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.3rem' }}>
               Topic {idx + 1} of {total}
             </div>
@@ -78,9 +168,24 @@ const TopicContent = ({ topic, idx, total, onPrev, onNext }) => {
               {topic.title}
             </h2>
           </div>
-          <span className={`badge badge-${diff.badge}`} style={{ flexShrink: 0, marginTop: 2 }}>
-            {diff.label}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+            {moduleId && topic._id && (
+              <Link
+                to={`/student/adaptive/${moduleId}?topicId=${topic._id}&forceNew=true`}
+                className="btn btn-sm btn-secondary"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+                  fontSize: '0.78rem', fontWeight: 700, borderColor: 'rgba(15,23,42,0.25)',
+                  color: 'var(--navy)', background: '#fff',
+                }}
+              >
+                <HiLightningBolt style={{ color: '#f59e0b' }} /> Practice Topic
+              </Link>
+            )}
+            <span className={`badge badge-${diff.badge}`} style={{ marginTop: 2 }}>
+              {diff.label}
+            </span>
+          </div>
         </div>
 
         {/* Topic progress strip */}
@@ -198,20 +303,26 @@ const TopicContent = ({ topic, idx, total, onPrev, onNext }) => {
 const ModuleView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [module, setModule]           = useState(null);
-  const [quizzes, setQuizzes]         = useState([]);
-  const [activeTopic, setActiveTopic] = useState(0);
-  const [completed, setCompleted]     = useState(new Set());
-  const [loading, setLoading]         = useState(true);
-  const [error, setError]             = useState('');
+  const [module, setModule]             = useState(null);
+  const [quizzes, setQuizzes]           = useState([]);
+  const [learnerState, setLearnerState] = useState(null);
+  const [adaptivePlan, setAdaptivePlan] = useState(null);
+  const [activeTopic, setActiveTopic]   = useState(0);
+  const [completed, setCompleted]       = useState(new Set());
+  const [loading, setLoading]           = useState(true);
+  const [error, setError]               = useState('');
 
   useEffect(() => {
     Promise.all([
       api.get(`/modules/${id}`),
       api.get(`/quizzes/module/${id}`),
-    ]).then(([mod, qz]) => {
+      api.get(`/adaptation/summary/${id}`).catch(() => null),
+      api.get(`/adaptation/next/${id}`).catch(() => null),
+    ]).then(([mod, qz, ls, plan]) => {
       setModule(mod.data);
       setQuizzes(qz.data.filter(q => q.status === 'published'));
+      setLearnerState(ls?.data || null);
+      setAdaptivePlan(plan?.data || null);
       setLoading(false);
     }).catch(err => {
       setError(err.response?.data?.message || 'Could not load module.');
@@ -225,7 +336,18 @@ const ModuleView = () => {
     markDone(activeTopic);
     setActiveTopic(p => Math.min(topics.length - 1, p + 1));
   };
-  const goPrev = () => setActiveTopic(p => Math.max(0, p - 1));
+  const goPrev = () => {
+    markDone(activeTopic);
+    setActiveTopic(p => Math.max(0, p - 1));
+  };
+
+  // Mark the active topic done after a short delay (user has seen it).
+  // Use module?.topics?.length — 'topics' const is declared further down.
+  useEffect(() => {
+    if (!module?.topics?.length) return;
+    const timer = setTimeout(() => markDone(activeTopic), 2000);
+    return () => clearTimeout(timer);
+  }, [activeTopic, module]);
 
   if (loading) return <div className="loading"><div className="spinner" />Loading module…</div>;
   if (error)   return (
@@ -278,6 +400,12 @@ const ModuleView = () => {
 
         {/* ── Sidebar ────────────────────────────────────────────────────── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {/* Adaptive panel — shown when a knowledge gap is detected */}
+          <AdaptiveContentPanel
+            plan={adaptivePlan}
+            moduleId={id}
+          />
+
           {/* Topics nav */}
           <div className="card" style={{ padding: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.75rem', paddingBottom: '0.6rem', borderBottom: '1px solid var(--border)' }}>
@@ -288,14 +416,24 @@ const ModuleView = () => {
             </div>
             {topics.length === 0
               ? <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>No topics in this module.</p>
-              : topics.map((t, i) => (
-                <TopicItem
-                  key={t._id} topic={t} idx={i}
-                  active={activeTopic === i}
-                  completed={completed.has(i)}
-                  onClick={() => { markDone(activeTopic); setActiveTopic(i); }}
-                />
-              ))
+              : topics.map((t, i) => {
+                const masteryRecord = learnerState?.topicSummaries?.find(s => s.topicId?.toString() === t._id?.toString());
+                return (
+                  <div key={t._id}>
+                    <TopicItem
+                      topic={t} idx={i}
+                      active={activeTopic === i}
+                      completed={completed.has(i)}
+                      onClick={() => { markDone(activeTopic); setActiveTopic(i); }}
+                    />
+                    {masteryRecord && masteryRecord.mastery !== null && (
+                      <div style={{ paddingLeft: '2.35rem', paddingBottom: '0.25rem' }}>
+                        <MasteryMini mastery={masteryRecord.mastery} state={masteryRecord.state} />
+                      </div>
+                    )}
+                  </div>
+                );
+              })
             }
           </div>
 
@@ -346,6 +484,7 @@ const ModuleView = () => {
               total={topics.length}
               onPrev={goPrev}
               onNext={goNext}
+              moduleId={id}
             />
           : <div className="card">
               <p style={{ color: 'var(--text-muted)' }}>No topics have been added to this module yet.</p>

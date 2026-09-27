@@ -33,6 +33,8 @@ import StudentModules from './pages/student/StudentModules';
 import ModuleView from './pages/student/ModuleView';
 import QuizAttempt from './pages/student/QuizAttempt';
 import StudentResults from './pages/student/StudentResults';
+import AdaptiveActivity from './pages/student/AdaptiveActivity';
+import AdaptivePractice from './pages/student/AdaptivePractice';
 
 const ProtectedRoute = ({ children, roles }) => {
   const { user } = useAuth();
@@ -52,7 +54,7 @@ const RoleRedirect = () => {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
@@ -87,6 +89,8 @@ function App() {
             <Route path="modules" element={<StudentModules />} />
             <Route path="modules/:id" element={<ModuleView />} />
             <Route path="quiz/:id" element={<QuizAttempt />} />
+            <Route path="adaptive" element={<AdaptivePractice />} />
+            <Route path="adaptive/:moduleId" element={<AdaptiveActivity />} />
             <Route path="results" element={<StudentResults />} />
           </Route>
         </Routes>
