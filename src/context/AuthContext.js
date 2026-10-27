@@ -7,6 +7,16 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('user') || 'null'));
   const [loading, setLoading] = useState(false);
 
+  // Sync user profile, XP, level, streak from server on app load
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('user') || 'null');
+      if (stored?.token) {
+        refreshUser();
+      }
+    } catch (_) {}
+  }, []);
+
   const login = async (email, password) => {
     const { data } = await api.post('/auth/login', { email, password });
     localStorage.setItem('user', JSON.stringify(data));

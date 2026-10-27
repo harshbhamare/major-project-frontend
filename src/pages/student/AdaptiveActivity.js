@@ -10,6 +10,7 @@ import {
   HiBookOpen, HiCheck, HiX, HiPencilAlt, HiVideoCamera,
   HiFire, HiAcademicCap, HiLightningBolt,
 } from 'react-icons/hi';
+import { useAuth } from '../../context/AuthContext';
 import InteractiveConceptAnimator from '../../components/InteractiveConceptAnimator';
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D'];
@@ -100,6 +101,7 @@ const StepProgressHeader = ({ chain, currentTopicId, onSelectTopic }) => {
 const AdaptiveActivity = () => {
   const { moduleId } = useParams();
   const [searchParams] = useSearchParams();
+  const { user, updateGamification, refreshUser } = useAuth();
 
   const initialTopicRef = useRef(searchParams.get('topicId') || null);
 
@@ -129,12 +131,7 @@ const AdaptiveActivity = () => {
     if (inFlightRef.current) return;
     inFlightRef.current = true;
 
-    if (activity) {
-      setTransitioning(true);
-    } else {
-      setLoading(true);
-    }
-
+    setLoading(true);
     setSelectedAnswer('');
     setOutcome(null);
     setErrorMsg('');
@@ -165,9 +162,10 @@ const AdaptiveActivity = () => {
       setTransitioning(false);
       inFlightRef.current = false;
     }
-  }, [moduleId, activity]);
+  }, [moduleId]);
 
   useEffect(() => {
+    if (refreshUser) refreshUser();
     fetchLesson(initialTopicRef.current, true);
   }, []); // Initial mount load
 
@@ -181,6 +179,13 @@ const AdaptiveActivity = () => {
 
       if (res.isCorrect) {
         setSetCorrectCount(c => c + 1);
+      }
+
+      // Real-time synchronization of XP, level, streak, and badges with top header
+      if (res.gamification && updateGamification) {
+        updateGamification(res.gamification);
+      } else if (refreshUser) {
+        refreshUser();
       }
 
       const updatedMastery = res.masteryAfter !== null && res.masteryAfter !== undefined
@@ -204,6 +209,8 @@ const AdaptiveActivity = () => {
   const handleNextQuestionInSet = () => {
     if (setQuestionIndex + 1 < SET_TARGET && !topicMastered) {
       setSetQuestionIndex(i => i + 1);
+      setSelectedAnswer('');
+      setOutcome(null);
       fetchLesson(currentTopicId, true);
     } else {
       setTopicMastered(true);
@@ -902,16 +909,55 @@ const AdaptiveActivity = () => {
                     background: outcome.isCorrect ? '#f0fdf4' : '#fffbeb',
                     border: `1.5px solid ${outcome.isCorrect ? '#86efac' : '#fde68a'}`,
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
-                      {outcome.isCorrect ? (
-                        <HiCheckCircle style={{ color: '#16a34a', fontSize: '1.25rem' }} />
-                      ) : (
-                        <HiLightBulb style={{ color: '#d97706', fontSize: '1.25rem' }} />
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem', flexWrap: 'wrap', gap: '0.4rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        {outcome.isCorrect ? (
+                          <HiCheckCircle style={{ color: '#16a34a', fontSize: '1.35rem' }} />
+                        ) : (
+                          <HiLightBulb style={{ color: '#d97706', fontSize: '1.35rem' }} />
+                        )}
+                        <strong style={{ fontSize: '0.94rem', color: outcome.isCorrect ? '#166534' : '#92400e' }}>
+                          {outcome.isCorrect ? 'Outstanding! Well reasoned.' : 'Concept Breakdown:'}
+                        </strong>
+                      </div>
+
+                      {outcome.gamification && (
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                          background: outcome.isCorrect ? '#dcfce7' : '#fef3c7',
+                          color: outcome.isCorrect ? '#15803d' : '#b45309',
+                          border: `1px solid ${outcome.isCorrect ? '#86efac' : '#fde68a'}`,
+                          padding: '0.2rem 0.6rem',
+                          borderRadius: 999,
+                          fontSize: '0.76rem',
+                          fontWeight: 800,
+                        }}>
+                          <HiLightningBolt /> +{outcome.gamification.xpEarned} XP Earned ({outcome.gamification.totalXp} XP · Lvl {outcome.gamification.level})
+                        </span>
                       )}
-                      <strong style={{ fontSize: '0.92rem', color: outcome.isCorrect ? '#166534' : '#92400e' }}>
-                        {outcome.isCorrect ? 'Correct! +25 XP' : 'Concept Insight:'}
-                      </strong>
                     </div>
+
+                    {outcome.gamification?.newBadges?.map((b) => (
+                      <div key={b.id || b.title} style={{
+                        marginTop: '0.4rem',
+                        marginBottom: '0.5rem',
+                        padding: '0.45rem 0.8rem',
+                        background: '#eff6ff',
+                        border: '1px solid #bfdbfe',
+                        borderRadius: 8,
+                        fontSize: '0.78rem',
+                        color: '#1e40af',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.4rem',
+                      }}>
+                        <span style={{ fontSize: '1.15rem' }}>{b.icon || '🏆'}</span>
+                        <span>Badge Unlocked: <strong>{b.title}</strong> — {b.description}</span>
+                      </div>
+                    ))}
 
                     {!outcome.isCorrect && outcome.correctAnswer && (
                       <div style={{ fontSize: '0.84rem', color: '#78350f', fontWeight: 600, marginBottom: '0.25rem' }}>
