@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import { HiAcademicCap, HiCheckCircle, HiExclamationCircle, HiLogin, HiBookOpen, HiUsers, HiCollection } from 'react-icons/hi';
+import { HiAcademicCap, HiCheckCircle, HiExclamationCircle, HiLogin, HiBookOpen, HiUsers, HiCollection, HiArrowRight } from 'react-icons/hi';
 
 const JoinRoom = () => {
   const { code: urlCode } = useParams();
@@ -14,26 +14,28 @@ const JoinRoom = () => {
   const [autoJoining, setAutoJoining] = useState(!!urlCode);
   const [result, setResult] = useState(null); // { room, alreadyMember }
   const [error, setError] = useState('');
+  const joiningRef = useRef(false);
 
   // Auto-join if code is in URL and user is logged in
   useEffect(() => {
-    if (urlCode && user) {
+    if (urlCode && user && !joiningRef.current) {
       joinWithCode(urlCode.toUpperCase());
-    } else {
+    } else if (!urlCode) {
       setAutoJoining(false);
     }
   }, [urlCode, user]);
 
   const joinWithCode = async (joinCode) => {
+    if (joiningRef.current) return;
+    joiningRef.current = true;
     setLoading(true);
     setError('');
     try {
       const { data } = await api.post('/rooms/join', { code: joinCode });
       setResult(data);
-      setLoading(false);
-      setAutoJoining(false);
     } catch (err) {
       setError(err.response?.data?.message || 'Could not join room. Check the code and try again.');
+    } finally {
       setLoading(false);
       setAutoJoining(false);
     }
@@ -68,9 +70,9 @@ const JoinRoom = () => {
     const { room, alreadyMember } = result;
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', padding: '1rem' }}>
-        <div style={{ background: 'white', borderRadius: 20, padding: '2.5rem', maxWidth: 480, width: '100%', textAlign: 'center', boxShadow: '0 8px 40px rgba(0,0,0,0.12)' }}>
-          <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(74,222,128,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', fontSize: '2.2rem' }}>
-            <HiCheckCircle style={{ color: 'var(--green)' }} />
+        <div style={{ background: 'white', borderRadius: 'var(--radius)', padding: '2.5rem', maxWidth: 480, width: '100%', textAlign: 'center', boxShadow: 'var(--shadow-lg)' }}>
+          <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', fontSize: '2.2rem' }}>
+            <HiCheckCircle style={{ color: 'var(--success)' }} />
           </div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem' }}>
             {alreadyMember ? 'Already a member!' : "You're in!"}
@@ -82,9 +84,9 @@ const JoinRoom = () => {
           </p>
 
           {/* Room preview */}
-          <div style={{ background: 'var(--bg)', borderRadius: 12, padding: '1rem', marginBottom: '1.5rem', textAlign: 'left' }}>
+          <div style={{ background: 'var(--bg)', borderRadius: 'var(--radius-sm)', padding: '1rem', marginBottom: '1.5rem', textAlign: 'left' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: room.color || 'var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.2rem' }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: room.color || 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.2rem' }}>
                 <HiCollection />
               </div>
               <div>
@@ -103,8 +105,8 @@ const JoinRoom = () => {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <Link to="/student/modules" className="btn btn-primary" style={{ justifyContent: 'center', width: '100%' }}>
-              Browse Modules →
+            <Link to="/student/modules" className="btn btn-primary" style={{ justifyContent: 'center', width: '100%', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              Browse Modules <HiArrowRight />
             </Link>
             <Link to="/student" className="btn btn-secondary" style={{ justifyContent: 'center', width: '100%' }}>
               Go to Dashboard
@@ -118,10 +120,10 @@ const JoinRoom = () => {
   // Join form
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', padding: '1rem' }}>
-      <div style={{ background: 'white', borderRadius: 20, padding: '2.5rem', maxWidth: 440, width: '100%', boxShadow: '0 8px 40px rgba(0,0,0,0.1)' }}>
+      <div style={{ background: 'white', borderRadius: 'var(--radius)', padding: '2.5rem', maxWidth: 440, width: '100%', boxShadow: 'var(--shadow-lg)' }}>
         {/* Brand */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '2rem' }}>
-          <div style={{ width: 36, height: 36, background: 'var(--navy)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', color: 'var(--green)' }}>
+          <div style={{ width: 36, height: 36, background: 'var(--primary)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', color: '#fff' }}>
             <HiAcademicCap />
           </div>
           <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>AI Learning Platform</span>
@@ -156,9 +158,9 @@ const JoinRoom = () => {
             type="submit"
             className="btn-auth"
             disabled={loading || code.length < 6}
-            style={{ marginTop: '0.5rem' }}
+            style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
           >
-            {loading ? <><span className="btn-spinner" /> Joining…</> : !user ? <><HiLogin /> Sign in & Join</> : 'Join Room →'}
+            {loading ? <><span className="btn-spinner" /> Joining…</> : !user ? <><HiLogin /> Sign in & Join</> : <>Join Room <HiArrowRight /></>}
           </button>
         </form>
 
@@ -170,7 +172,7 @@ const JoinRoom = () => {
 
         {user && (
           <div style={{ marginTop: '1.25rem', textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            Signed in as <strong>{user.name}</strong> · <Link to="/student" style={{ color: 'var(--navy)', fontWeight: 600 }}>Back to Dashboard</Link>
+            Signed in as <strong>{user.name}</strong> · <Link to="/student" style={{ color: 'var(--primary)', fontWeight: 600 }}>Back to Dashboard</Link>
           </div>
         )}
       </div>

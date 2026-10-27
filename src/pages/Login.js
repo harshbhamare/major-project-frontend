@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { HiMail, HiLockClosed, HiEye, HiEyeOff, HiAcademicCap, HiSparkles, HiCheckCircle } from 'react-icons/hi';
+import { HiMail, HiLockClosed, HiEye, HiEyeOff, HiAcademicCap, HiSparkles, HiCheckCircle, HiExclamationCircle, HiArrowRight } from 'react-icons/hi';
 
 const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -86,7 +86,8 @@ const Login = () => {
 
           {error && (
             <div className="auth-alert error">
-              <span>⚠</span> {error}
+              <HiExclamationCircle style={{ fontSize: '1.25rem', flexShrink: 0 }} />
+              <span>{error}</span>
             </div>
           )}
 
@@ -138,7 +139,10 @@ const Login = () => {
                   Signing in...
                 </>
               ) : (
-                'Sign In →'
+                <>
+                  <span>Sign In</span>
+                  <HiArrowRight style={{ fontSize: '1.1rem' }} />
+                </>
               )}
             </button>
           </form>

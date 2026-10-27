@@ -93,118 +93,101 @@ const StudentDashboard = () => {
     }
   };
 
-  if (loading) return <div className="loading"><div className="spinner" />Loading your learning quest…</div>;
+  if (loading) return <div className="loading"><div className="spinner" />Loading your dashboard…</div>;
 
   const topicMastery       = dashboard?.topicMastery || [];
   const needsReview        = topicMastery.filter(t => t.state === 'needs_intervention');
   const developing         = topicMastery.filter(t => t.state === 'developing');
   const mastered           = topicMastery.filter(t => t.state === 'mastered');
-  const userXp             = user?.xp ?? dashboard?.gamification?.xp ?? 0;
-  const userStreak         = user?.streak ?? dashboard?.gamification?.streak ?? 1;
-  const userLevel          = user?.level ?? dashboard?.gamification?.level ?? 1;
-  const levelTitle         = dashboard?.gamification?.levelTitle || 'Code Explorer';
 
   return (
     <div>
       {/* Header */}
       <div className="page-header" style={{ marginBottom: '1.25rem' }}>
         <div>
-          <h1 className="page-title">Quest Central</h1>
-          <p className="page-subtitle">Welcome back, {user?.name}! Ready to conquer today's coding challenges?</p>
+          <h1 className="page-title">Student Dashboard</h1>
+          <p className="page-subtitle">Welcome back, {user?.name}! Continue your learning journey below.</p>
         </div>
         <div style={{ display: 'flex', gap: '0.6rem' }}>
-          <Link to="/student/adaptive" className="btn btn-primary" style={{ background: 'var(--green)', color: 'var(--navy)', fontWeight: 800 }}>
-            <HiLightningBolt /> Adaptive Arena
-          </Link>
-          <Link to="/student/modules" className="btn btn-secondary">
+          <Link to="/student/modules" className="btn btn-primary">
             <HiBookOpen /> Browse Modules
+          </Link>
+          <Link to="/student/adaptive" className="btn btn-secondary">
+            <HiLightningBolt /> AI Practice
           </Link>
         </div>
       </div>
 
-      {/* Hero Quest Card */}
+      {/* Focus Learning Banner */}
       <div style={{
         padding: '1.5rem',
-        borderRadius: 16,
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-        color: '#fff',
+        borderRadius: 'var(--radius)',
+        background: 'var(--surface)',
         marginBottom: '1.5rem',
-        boxShadow: '0 8px 24px rgba(15,23,42,0.18)',
-        border: '1px solid #334155',
+        boxShadow: 'var(--shadow)',
+        border: '1px solid var(--border)',
+        borderLeft: '4px solid var(--primary)',
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '0.75rem' }}>
           <div>
             <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-              fontSize: '0.74rem', fontWeight: 800, textTransform: 'uppercase',
-              color: 'var(--green)', background: 'rgba(74, 222, 128, 0.12)',
-              border: '1px solid rgba(74, 222, 128, 0.25)',
-              padding: '0.2rem 0.65rem', borderRadius: 999, marginBottom: '0.4rem',
+              display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+              fontSize: '0.74rem', fontWeight: 700, textTransform: 'uppercase',
+              color: 'var(--primary)', background: 'var(--primary-light)',
+              padding: '0.2rem 0.65rem', borderRadius: 'var(--radius-sm)', marginBottom: '0.4rem',
             }}>
-              <HiSparkles /> Active Daily Mission
+              <HiSparkles /> Recommended Study Step
             </div>
-            <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)', margin: 0 }}>
               {needsReview.length > 0
-                ? `Squash Defect: Reinforce "${needsReview[0].topicTitle}"`
+                ? `Review: "${needsReview[0].topicTitle}"`
                 : developing.length > 0
-                ? `Level-Up Bounty: Master "${developing[0].topicTitle}"`
-                : 'Conquer Your Next Module Challenge'}
+                ? `Strengthen: "${developing[0].topicTitle}"`
+                : 'Explore New Concepts in Your Modules'}
             </h2>
-          </div>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: '0.6rem',
-            background: 'rgba(255,255,255,0.06)', padding: '0.4rem 0.85rem', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)',
-          }}>
-            <span style={{ fontSize: '1.4rem' }}>🔥</span>
-            <div>
-              <div style={{ fontSize: '0.68rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700 }}>Streak</div>
-              <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#f59e0b' }}>{userStreak} Day{userStreak !== 1 ? 's' : ''}</div>
-            </div>
           </div>
         </div>
 
-        <p style={{ fontSize: '0.88rem', color: '#cbd5e1', lineHeight: 1.6, marginBottom: '1.25rem', maxWidth: 650 }}>
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-sub)', lineHeight: 1.6, marginBottom: '1.25rem', maxWidth: 680 }}>
           {needsReview.length > 0
-            ? `Your current mastery in "${needsReview[0].topicTitle}" is ${Math.round(needsReview[0].mastery * 100)}%. Jump into the Adaptive Arena to squash defects and boost your skill.`
+            ? `Your current understanding in "${needsReview[0].topicTitle}" is ${Math.round(needsReview[0].mastery * 100)}%. Walk through the AI-guided explanation and practice to master this concept.`
             : developing.length > 0
-            ? `Mastery is developing at ${Math.round(developing[0].mastery * 100)}%. One quick practice round will earn bonus XP and push you across the finish line!`
-            : 'You are in great shape across all assessed concepts! Complete new module quizzes to unlock higher-tier badges.'}
+            ? `You have a good grasp of "${developing[0].topicTitle}" (${Math.round(developing[0].mastery * 100)}%). A quick review will solidify your knowledge.`
+            : 'You are doing great across all assessed topics! Open any module to learn new concepts or take self-paced practice.'}
         </p>
 
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
           <Link
-            to="/student/adaptive"
+            to={needsReview.length > 0 ? `/student/adaptive?topicId=${needsReview[0].topicId}&forceNew=true` : '/student/adaptive'}
             className="btn btn-primary"
             style={{
-              background: 'var(--green)', color: 'var(--navy)',
-              fontWeight: 800, fontSize: '0.88rem', padding: '0.55rem 1.25rem',
+              fontSize: '0.88rem', padding: '0.55rem 1.25rem',
               display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
             }}
           >
-            <HiLightningBolt /> Launch Daily Mission ({needsReview.length > 0 ? '+75 XP' : '+50 XP'}) <HiArrowRight />
+            <HiLightningBolt /> {needsReview.length > 0 ? 'Practice This Topic' : 'Start AI Practice'} <HiArrowRight />
           </Link>
           <Link
             to="/student/modules"
-            style={{ color: '#94a3b8', fontSize: '0.82rem', textDecoration: 'underline', marginLeft: '0.25rem' }}
+            className="btn btn-secondary"
+            style={{ fontSize: '0.88rem', padding: '0.55rem 1.1rem' }}
           >
-            Explore all topics
+            View All Modules
           </Link>
         </div>
       </div>
 
-      {/* Gamified Stats Grid */}
+      {/* Clean Educational Stats Grid */}
       <div className="stats-grid" style={{ marginBottom: '1.5rem' }}>
         {[
-          { label: 'Total XP',           value: `${userXp} ⚡`,                          Icon: HiLightningBolt, color: '#eab308' },
-          { label: 'Coder Level',        value: `Lvl ${userLevel}`,                      Icon: HiAcademicCap,   color: '#38bdf8' },
-          { label: 'Daily Streak',       value: `${userStreak} 🔥`,                      Icon: HiFire,          color: '#f97316' },
-          { label: 'Skills Mastered',    value: mastered.length,                         Icon: HiCheckCircle,   color: '#22c55e' },
-          { label: 'Quizzes Conquered',  value: dashboard?.totalQuizzes || 0,            Icon: HiClipboardList, color: '#a855f7' },
-          { label: 'Average Accuracy',   value: `${dashboard?.avgScore || 0}%`,          Icon: HiChartBar,      color: '#06b6d4' },
+          { label: 'Enrolled Classrooms', value: rooms.length,                    Icon: HiCollection,    color: '#3b82f6' },
+          { label: 'Concepts Mastered',   value: mastered.length,                  Icon: HiCheckCircle,   color: '#22c55e' },
+          { label: 'Quizzes Completed',   value: dashboard?.totalQuizzes || 0,     Icon: HiClipboardList, color: '#8b5cf6' },
+          { label: 'Average Score',       value: `${dashboard?.avgScore || 0}%`,   Icon: HiChartBar,      color: '#06b6d4' },
         ].map(({ label, value, Icon, color }) => (
           <div className="stat-card" key={label} style={{ position: 'relative', overflow: 'hidden' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.65rem' }}>
-              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</div>
               <div style={{ width: 28, height: 28, borderRadius: 8, background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Icon style={{ color, fontSize: '1rem' }} />
               </div>
@@ -214,13 +197,14 @@ const StudentDashboard = () => {
         ))}
       </div>
 
+
       {/* Classroom Join Banner */}
       <div className="join-banner" style={{ marginBottom: '1.5rem' }}>
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 700, fontSize: '0.92rem', color: '#fff', marginBottom: '0.2rem' }}>
             Join an Instructor Classroom
           </div>
-          <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', margin: 0 }}>
+          <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.85)', margin: 0 }}>
             Enter your instructor's 6-character room code to unlock their course modules and assignments.
           </p>
         </div>
@@ -231,9 +215,9 @@ const StudentDashboard = () => {
             onChange={e => setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
             placeholder="Room Code"
             maxLength={6}
-            style={{ width: 130, textAlign: 'center', fontFamily: 'monospace', fontWeight: 800, letterSpacing: '0.18em', fontSize: '1rem', background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)', color: '#fff' }}
+            style={{ width: 130, textAlign: 'center', fontFamily: 'monospace', fontWeight: 800, letterSpacing: '0.18em', fontSize: '1rem', background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: '#fff' }}
           />
-          <button type="submit" className="btn btn-primary" disabled={joining || joinCode.length < 6} style={{ whiteSpace: 'nowrap', background: 'var(--green)', color: 'var(--navy)', fontWeight: 800 }}>
+          <button type="submit" className="btn btn-primary" disabled={joining || joinCode.length < 6} style={{ whiteSpace: 'nowrap' }}>
             {joining ? 'Joining…' : 'Join Room'}
           </button>
         </form>
@@ -324,7 +308,7 @@ const StudentDashboard = () => {
           <div className="card" style={{ borderLeft: '3px solid var(--danger)' }}>
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 className="card-title">Priority Review</h2>
-              <Link to="/student/adaptive" className="btn btn-sm btn-primary" style={{ background: 'var(--green)', color: 'var(--navy)', fontWeight: 700 }}>
+              <Link to="/student/adaptive" className="btn btn-sm btn-primary">
                 Practice Now
               </Link>
             </div>
@@ -339,10 +323,10 @@ const StudentDashboard = () => {
                 </div>
                 <Link
                   to={`/student/adaptive?topicId=${t.topicId}&forceNew=true`}
-                  className="btn btn-sm btn-primary"
-                  style={{ background: '#ef4444', color: '#fff', fontSize: '0.74rem', padding: '0.25rem 0.65rem', fontWeight: 800, whiteSpace: 'nowrap' }}
+                  className="btn btn-sm btn-secondary"
+                  style={{ fontSize: '0.74rem', padding: '0.25rem 0.65rem', fontWeight: 600, whiteSpace: 'nowrap' }}
                 >
-                  Fix Defect 🐞
+                  Review Concept
                 </Link>
               </div>
             ))}

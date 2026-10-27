@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   HiCode, HiRefresh, HiLightBulb, HiCheck, HiPencilAlt,
-  HiLightningBolt,
+  HiLightningBolt, HiExclamationCircle, HiSearch, HiCheckCircle,
 } from 'react-icons/hi';
 
 const BLANK_REGEX = /___|\/\*\s*COMPLETE\s*HERE\s*\*\/|\/\/\s*COMPLETE\s*HERE|\[BLANK\]|<blank>/i;
@@ -139,12 +139,19 @@ const CodeSnippetEditor = ({
           <span style={{
             background: mode === 'code_completion' ? '#1e3a8a' : '#7f1d1d',
             color: mode === 'code_completion' ? '#bfdbfe' : '#fecaca',
-            padding: '0.15rem 0.55rem',
+            padding: '0.2rem 0.6rem',
             borderRadius: 6,
-            fontSize: '0.72rem',
+            fontSize: '0.74rem',
             fontWeight: 700,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.35rem',
           }}>
-            {mode === 'code_completion' ? '✍️ Fill in the Blank' : '🔍 Code Fix'}
+            {mode === 'code_completion' ? (
+              <><HiPencilAlt style={{ fontSize: '0.85rem' }} /> Fill in the Blank</>
+            ) : (
+              <><HiSearch style={{ fontSize: '0.85rem' }} /> Code Fix</>
+            )}
           </span>
         </div>
 
@@ -267,7 +274,10 @@ const CodeSnippetEditor = ({
           fontSize: '0.82rem',
           color: '#fca5a5',
         }}>
-          <span>⚠️ <strong>Reported Issue:</strong> {errorDescription}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+            <HiExclamationCircle style={{ fontSize: '1.1rem', color: '#f87171', flexShrink: 0 }} />
+            <span><strong>Reported Issue:</strong> {errorDescription}</span>
+          </div>
         </div>
       )}
 
@@ -337,13 +347,15 @@ const CodeSnippetEditor = ({
           {/* Guided Blank Input Box */}
           <div style={{ padding: '1.25rem', background: '#0b1120' }}>
             <label style={{
-              display: 'block',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
               fontSize: '0.88rem',
               fontWeight: 700,
               color: '#f8fafc',
               marginBottom: '0.5rem',
             }}>
-              ✏️ Type the missing code to complete the statement:
+              <HiPencilAlt style={{ color: '#38bdf8', fontSize: '1.05rem' }} /> Type the missing code to complete the statement:
             </label>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
               <input
@@ -423,7 +435,10 @@ const CodeSnippetEditor = ({
               flexWrap: 'wrap',
               gap: '0.5rem',
             }}>
-              <span>💡 Tip: Only type the missing value that fills the blank.</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                <HiLightBulb style={{ color: '#f59e0b', fontSize: '0.95rem' }} />
+                <span>Tip: Only type the missing value that fills the blank.</span>
+              </span>
               <button
                 type="button"
                 onClick={() => setViewMode('editor')}
@@ -575,8 +590,17 @@ const CodeSnippetEditor = ({
                     <span style={{ flex: 1, color: isChanged ? '#4ade80' : '#e2e8f0', whiteSpace: 'pre-wrap' }}>
                       {line || ' '}
                     </span>
-                    <span style={{ fontSize: '0.72rem', color: isChanged ? '#22c55e' : '#94a3b8', fontWeight: 600 }}>
-                      {isChanged ? '✓ Fixed' : isSelected ? 'Editing' : 'Click to Fix'}
+                    <span style={{
+                      fontSize: '0.72rem',
+                      color: isChanged ? '#22c55e' : '#94a3b8',
+                      fontWeight: 600,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.25rem',
+                    }}>
+                      {isChanged ? (
+                        <><HiCheck style={{ fontSize: '0.85rem' }} /> Fixed</>
+                      ) : isSelected ? 'Editing' : 'Click to Fix'}
                     </span>
                   </div>
 

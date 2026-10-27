@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
   HiSparkles, HiFire, HiAcademicCap, HiLightningBolt,
-  HiTrophy, HiX,
+  HiX,
 } from 'react-icons/hi';
+import { MdEmojiEvents, MdWorkspacePremium, MdMilitaryTech, MdStars } from 'react-icons/md';
 
 const LEVEL_CONFIG = [
   { level: 1, minXp: 0,    title: 'Novice Explorer' },
@@ -58,44 +59,45 @@ const GamificationBar = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0.65rem 1.25rem',
-        background: 'linear-gradient(90deg, #111827 0%, #1e293b 100%)',
-        borderBottom: '1px solid #334155',
-        color: '#fff',
+        padding: '0.65rem 1.5rem',
+        background: '#ffffff',
+        borderBottom: '1px solid var(--border)',
+        color: 'var(--text)',
         flexWrap: 'wrap',
-        gap: '0.75rem',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
+        gap: '1rem',
+        boxShadow: 'var(--shadow-sm)',
       }}>
         {/* Level and Title */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div style={{
-            width: 34,
-            height: 34,
+            width: 36,
+            height: 36,
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)',
+            background: 'var(--primary-container)',
+            color: 'var(--primary)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '1rem',
-            boxShadow: '0 0 10px rgba(56,189,248,0.4)',
-            fontWeight: 800,
+            fontSize: '1.25rem',
+            border: '1px solid rgba(26, 86, 219, 0.2)',
           }}>
-            🎖️
+            <MdMilitaryTech />
           </div>
           <div>
             <div style={{
-              fontSize: '0.85rem',
-              fontWeight: 800,
+              fontSize: '0.86rem',
+              fontWeight: 700,
               display: 'flex',
               alignItems: 'center',
-              gap: '0.35rem',
+              gap: '0.4rem',
               letterSpacing: '-0.01em',
+              color: 'var(--text)',
             }}>
               <span>Level {levelInfo.level}</span>
-              <span style={{ color: '#94a3b8', fontWeight: 400 }}>·</span>
-              <span style={{ color: '#38bdf8', fontWeight: 700 }}>{levelInfo.title}</span>
+              <span style={{ color: 'var(--border)', fontWeight: 400 }}>·</span>
+              <span style={{ color: 'var(--primary)', fontWeight: 600 }}>{levelInfo.title}</span>
             </div>
-            <div style={{ fontSize: '0.68rem', color: '#94a3b8' }}>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
               {xp} total XP earned
             </div>
           </div>
@@ -105,15 +107,15 @@ const GamificationBar = () => {
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '0.6rem',
+          gap: '0.75rem',
           flex: 1,
-          maxWidth: 320,
-          minWidth: 180,
+          maxWidth: 340,
+          minWidth: 200,
         }}>
           <div style={{
             flex: 1,
             height: 8,
-            background: 'rgba(255,255,255,0.12)',
+            background: 'var(--border)',
             borderRadius: 999,
             overflow: 'hidden',
             position: 'relative',
@@ -121,38 +123,37 @@ const GamificationBar = () => {
             <div style={{
               height: '100%',
               width: `${levelInfo.pct}%`,
-              background: 'linear-gradient(90deg, #22c55e 0%, #4ade80 100%)',
+              background: 'var(--primary)',
               borderRadius: 999,
               transition: 'width 0.6s ease',
-              boxShadow: '0 0 8px rgba(74,222,128,0.5)',
             }} />
           </div>
-          <span style={{ fontSize: '0.72rem', color: '#cbd5e1', fontWeight: 700, whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: '0.74rem', color: 'var(--text-sub)', fontWeight: 600, whiteSpace: 'nowrap' }}>
             {levelInfo.pct}% to Lvl {levelInfo.level + 1}
           </span>
         </div>
 
         {/* Right Badges: Streak & Badges Button */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           {/* Streak pill */}
           <div
-            title={`${streak}-day learning streak! Practice daily to keep your flame burning.`}
+            title={`${streak}-day learning streak! Practice daily to keep your streak going.`}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.35rem',
-              padding: '0.3rem 0.7rem',
-              background: 'rgba(245, 158, 11, 0.15)',
-              border: '1px solid rgba(245, 158, 11, 0.35)',
-              borderRadius: 20,
+              gap: '0.4rem',
+              padding: '0.35rem 0.8rem',
+              background: 'var(--warning-bg)',
+              border: '1px solid var(--warning-border)',
+              borderRadius: 'var(--radius-full)',
               fontSize: '0.78rem',
-              fontWeight: 800,
-              color: '#fbbf24',
+              fontWeight: 700,
+              color: 'var(--warning)',
               cursor: 'default',
             }}
           >
-            <span style={{ animation: 'pulse 1.5s infinite alternate' }}>🔥</span>
-            <span>{streak} Day{streak !== 1 ? 's' : ''}</span>
+            <HiFire style={{ fontSize: '1.05rem', color: 'var(--warning)' }} />
+            <span>{streak} Day{streak !== 1 ? 's' : ''} Streak</span>
           </div>
 
           {/* Badges / Achievements button */}
@@ -161,22 +162,29 @@ const GamificationBar = () => {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.35rem',
-              padding: '0.3rem 0.75rem',
-              background: 'rgba(255, 255, 255, 0.08)',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
-              borderRadius: 20,
+              gap: '0.45rem',
+              padding: '0.35rem 0.85rem',
+              background: '#ffffff',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-full)',
               fontSize: '0.78rem',
-              fontWeight: 700,
-              color: '#fff',
+              fontWeight: 600,
+              color: 'var(--text-sub)',
               cursor: 'pointer',
-              transition: 'all 0.15s',
+              transition: 'all 0.15s ease',
+              boxShadow: 'var(--shadow-sm)',
             }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'}
+            onMouseEnter={e => {
+              e.currentTarget.style.borderColor = 'var(--primary)';
+              e.currentTarget.style.color = 'var(--primary)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.borderColor = 'var(--border)';
+              e.currentTarget.style.color = 'var(--text-sub)';
+            }}
           >
-            <span>🏆</span>
-            <span>Badges ({badges.length})</span>
+            <MdEmojiEvents style={{ color: 'var(--primary)', fontSize: '1rem' }} />
+            <span>Achievements ({badges.length})</span>
           </button>
         </div>
       </div>
@@ -186,8 +194,8 @@ const GamificationBar = () => {
         <div style={{
           position: 'fixed',
           top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(15,23,42,0.75)',
-          backdropFilter: 'blur(5px)',
+          background: 'rgba(15, 23, 42, 0.6)',
+          backdropFilter: 'blur(4px)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -197,32 +205,51 @@ const GamificationBar = () => {
         }}>
           <div style={{
             background: '#fff',
-            borderRadius: 16,
+            borderRadius: 'var(--radius-lg)',
             width: '100%',
             maxWidth: 480,
             padding: '1.75rem',
             position: 'relative',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.25)',
+            boxShadow: 'var(--shadow-xl)',
+            border: '1px solid var(--border)',
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '1.4rem' }}>🏆</span>
-                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: 'var(--text)' }}>
-                  Your Achievements
-                </h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <div style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'var(--primary-container)',
+                  color: 'var(--primary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.25rem',
+                }}>
+                  <MdEmojiEvents />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: 'var(--text)' }}>
+                    Your Achievements
+                  </h3>
+                  <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>
+                    Badges unlocked through quizzes and adaptive practice
+                  </div>
+                </div>
               </div>
               <button
                 onClick={() => setShowBadgesModal(false)}
                 style={{
                   background: 'var(--bg)',
-                  border: 'none',
+                  border: '1px solid var(--border)',
                   borderRadius: '50%',
-                  width: 30,
-                  height: 30,
+                  width: 32,
+                  height: 32,
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  color: 'var(--text-muted)',
                 }}
               >
                 <HiX />
@@ -230,10 +257,23 @@ const GamificationBar = () => {
             </div>
 
             {badges.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)' }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🎯</div>
-                <div style={{ fontWeight: 700, color: 'var(--text)' }}>No Badges Unlocked Yet</div>
-                <p style={{ fontSize: '0.82rem', marginTop: '0.3rem' }}>
+              <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)' }}>
+                <div style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: '50%',
+                  background: 'var(--bg)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 0.75rem',
+                  fontSize: '2rem',
+                  color: 'var(--text-muted)',
+                }}>
+                  <MdWorkspacePremium />
+                </div>
+                <div style={{ fontWeight: 700, color: 'var(--text)', fontSize: '0.95rem' }}>No Badges Unlocked Yet</div>
+                <p style={{ fontSize: '0.82rem', marginTop: '0.35rem', maxWidth: 320, marginLeft: 'auto', marginRight: 'auto' }}>
                   Complete quizzes, squash bugs in adaptive practice, and keep your daily streak alive to earn rewards!
                 </p>
               </div>
@@ -244,14 +284,27 @@ const GamificationBar = () => {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0.75rem',
-                    padding: '0.75rem',
-                    borderRadius: 10,
-                    background: '#f8fafc',
+                    padding: '0.85rem',
+                    borderRadius: 'var(--radius-sm)',
+                    background: 'var(--bg)',
                     border: '1px solid var(--border)',
                   }}>
-                    <span style={{ fontSize: '1.75rem' }}>{b.icon || '🏅'}</span>
+                    <div style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '50%',
+                      background: 'var(--primary-container)',
+                      color: 'var(--primary)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '1.35rem',
+                      flexShrink: 0,
+                    }}>
+                      <MdStars />
+                    </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--text)' }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text)' }}>
                         {b.title}
                       </div>
                       <div style={{ fontSize: '0.78rem', color: 'var(--text-sub)' }}>
@@ -259,7 +312,7 @@ const GamificationBar = () => {
                       </div>
                     </div>
                     {b.unlockedAt && (
-                      <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 500 }}>
                         {new Date(b.unlockedAt).toLocaleDateString()}
                       </span>
                     )}

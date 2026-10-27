@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import {
   HiDocumentText, HiUpload, HiVideoCamera, HiMusicNote,
-  HiLightningBolt, HiCheckCircle, HiX, HiExclamationCircle,
+  HiLightningBolt, HiCheckCircle, HiCheck, HiX, HiExclamationCircle,
   HiInformationCircle, HiRefresh,
 } from 'react-icons/hi';
 
@@ -27,17 +27,17 @@ const StepBar = ({ current }) => {
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
               <div style={{
                 width: 32, height: 32, borderRadius: '50%',
-                background: done ? 'var(--green)' : active ? '#3b82f6' : 'var(--border)',
+                background: done ? 'var(--success)' : active ? 'var(--primary)' : 'var(--border)',
                 color: 'white',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '0.85rem', fontWeight: 700,
                 transition: 'background 0.3s',
               }}>
-                {done ? '✓' : i + 1}
+                {done ? <HiCheck style={{ fontSize: '1rem' }} /> : i + 1}
               </div>
               <div style={{
                 fontSize: '0.72rem', marginTop: '0.3rem', fontWeight: active ? 700 : 500,
-                color: done ? 'var(--green)' : active ? '#3b82f6' : 'var(--text-muted)',
+                color: done ? 'var(--success)' : active ? 'var(--primary)' : 'var(--text-muted)',
               }}>
                 {s.label}
               </div>
@@ -45,7 +45,7 @@ const StepBar = ({ current }) => {
             {i < steps.length - 1 && (
               <div style={{
                 height: 2, flex: 2, marginBottom: 20,
-                background: done ? 'var(--green)' : 'var(--border)',
+                background: done ? 'var(--success)' : 'var(--border)',
                 transition: 'background 0.3s',
               }} />
             )}
@@ -201,11 +201,11 @@ const ContentUpload = () => {
           {processing ? (
             <>
               <div style={{ width: 80, height: 80, margin: '0 auto 1.5rem', position: 'relative' }}>
-                <div className="spinner" style={{ width: 80, height: 80, borderWidth: 4, borderTopColor: 'var(--green)' }} />
+                <div className="spinner" style={{ width: 80, height: 80, borderWidth: 4, borderTopColor: 'var(--primary)' }} />
                 <HiLightningBolt style={{
                   position: 'absolute', top: '50%', left: '50%',
                   transform: 'translate(-50%,-50%)',
-                  fontSize: '2rem', color: 'var(--green)',
+                  fontSize: '2rem', color: 'var(--primary)',
                 }} />
               </div>
               <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>
@@ -224,16 +224,16 @@ const ContentUpload = () => {
           ) : (
             /* complete */
             <>
-              <HiCheckCircle style={{ fontSize: '4.5rem', color: 'var(--green)', marginBottom: '1rem' }} />
+              <HiCheckCircle style={{ fontSize: '4.5rem', color: 'var(--success)', marginBottom: '1rem' }} />
               <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>
                 {isMediaMode ? 'File Uploaded!' : 'Processing Complete!'}
               </h2>
               {!isMediaMode && topicCount > 0 && (
                 <div style={{
                   display: 'inline-block',
-                  background: 'var(--green-glow)', border: '1px solid rgba(74,222,128,0.4)',
+                  background: '#ecfdf5', border: '1px solid rgba(5,150,105,0.25)',
                   borderRadius: 20, padding: '0.35rem 1rem',
-                  fontSize: '0.95rem', fontWeight: 600, color: 'var(--green-dark)',
+                  fontSize: '0.95rem', fontWeight: 600, color: 'var(--success)',
                   marginBottom: '0.75rem',
                 }}>
                   {topicCount} topic{topicCount !== 1 ? 's' : ''} extracted
@@ -262,16 +262,16 @@ const ContentUpload = () => {
           </p>
         </div>
         <div style={{
-          background: 'var(--green-glow)', padding: '0.75rem 1.25rem',
-          borderRadius: 'var(--radius-sm)', border: '1px solid rgba(74,222,128,0.3)',
+          background: 'var(--primary-light)', padding: '0.75rem 1.25rem',
+          borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)',
           display: 'flex', alignItems: 'center', gap: '0.5rem',
         }}>
-          <HiLightningBolt style={{ color: 'var(--green-dark)', fontSize: '1.2rem' }} />
+          <HiLightningBolt style={{ color: 'var(--primary)', fontSize: '1.2rem' }} />
           <div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--green-dark)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <div style={{ fontSize: '0.7rem', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               AI Powered
             </div>
-            <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--green-dark)' }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--primary-dark)' }}>
               Auto-extraction
             </div>
           </div>
@@ -452,14 +452,14 @@ const ContentUpload = () => {
                 </label>
               ) : (
                 <div style={{
-                  padding: '1.5rem',
-                  border: '2px solid var(--green)', borderRadius: 'var(--radius-sm)',
-                  background: 'var(--green-glow)',
+                  padding: '1.25rem',
+                  border: '1px solid var(--primary)', borderRadius: 'var(--radius)',
+                  background: 'var(--primary-light)',
                   display: 'flex', alignItems: 'center', gap: '1rem',
                 }}>
                   <div style={{
                     width: 48, height: 48, borderRadius: 'var(--radius-sm)',
-                    background: 'var(--green)', color: 'white',
+                    background: 'var(--primary)', color: 'white',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: '1.5rem', flexShrink: 0,
                   }}>

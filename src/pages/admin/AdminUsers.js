@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../services/api';
+import { HiPlus } from 'react-icons/hi';
 
 const emptyForm = { name: '', email: '', password: '', role: 'student' };
 
@@ -59,7 +60,7 @@ const AdminUsers = () => {
       <div className="page-header">
         <h1 className="page-title">User Management</h1>
         <button className="btn btn-primary" onClick={() => { setShowForm(!showForm); setEditId(null); setForm(emptyForm); }}>
-          + Add User
+          <HiPlus /> Add User
         </button>
       </div>
 

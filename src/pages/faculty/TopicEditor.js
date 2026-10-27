@@ -55,7 +55,7 @@ const TopicPreview = ({ topic }) => {
         <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
           {content.keyPoints.map((kp, i) => (
             <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', fontSize: '0.82rem', color: 'var(--text-sub)', lineHeight: 1.55 }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--green)', flexShrink: 0, marginTop: '0.45rem' }} />
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--success)', flexShrink: 0, marginTop: '0.45rem' }} />
               {kp}
             </li>
           ))}

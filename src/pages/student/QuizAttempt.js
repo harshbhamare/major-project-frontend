@@ -6,7 +6,7 @@ import CelebrationModal from '../../components/CelebrationModal';
 import {
   HiChevronRight, HiChevronLeft, HiCheckCircle, HiXCircle,
   HiClock, HiClipboardList, HiLightningBolt, HiAcademicCap,
-  HiTrendingUp, HiArrowRight, HiSparkles,
+  HiTrendingUp, HiArrowRight, HiSparkles, HiFire,
 } from 'react-icons/hi';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -29,7 +29,7 @@ const TimerRing = ({ timeLeft, totalTime }) => {
   const circ = 2 * Math.PI * r;
   const pct = totalTime > 0 ? timeLeft / totalTime : 0;
   const isLow = timeLeft < 60;
-  const color = isLow ? 'var(--danger)' : 'var(--green)';
+  const color = isLow ? 'var(--danger)' : 'var(--primary)';
 
   return (
     <div style={{ position: 'relative', width: 56, height: 56, flexShrink: 0 }}>
@@ -64,7 +64,7 @@ const QuestionCard = ({ question, qIdx, total, selected, onSelect }) => (
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <div style={{
           width: 36, height: 36, borderRadius: '50%',
-          background: 'var(--navy)', color: '#fff',
+          background: 'var(--primary)', color: '#fff',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontWeight: 800, fontSize: '0.85rem',
         }}>
@@ -103,9 +103,9 @@ const QuestionCard = ({ question, qIdx, total, selected, onSelect }) => (
             style={{
               display: 'flex', alignItems: 'center', gap: '0.875rem',
               padding: '0.875rem 1rem',
-              borderRadius: 10,
-              border: `2px solid ${isSelected ? 'var(--navy)' : 'var(--border)'}`,
-              background: isSelected ? 'var(--navy)' : 'white',
+              borderRadius: 'var(--radius)',
+              border: `1.5px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}`,
+              background: isSelected ? 'var(--primary-light)' : 'white',
               cursor: 'pointer', transition: 'all 0.15s',
               textAlign: 'left',
             }}
@@ -116,14 +116,14 @@ const QuestionCard = ({ question, qIdx, total, selected, onSelect }) => (
               width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontWeight: 700, fontSize: '0.75rem',
-              background: isSelected ? 'rgba(255,255,255,0.2)' : 'var(--bg)',
-              border: `1.5px solid ${isSelected ? 'rgba(255,255,255,0.4)' : 'var(--border)'}`,
+              background: isSelected ? 'var(--primary)' : 'var(--bg)',
+              border: `1.5px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}`,
               color: isSelected ? '#fff' : 'var(--text-sub)',
               transition: 'all 0.15s',
             }}>
               {OPTION_LABELS[oi]}
             </div>
-            <span style={{ fontSize: '0.9rem', color: isSelected ? '#fff' : 'var(--text)', fontWeight: isSelected ? 600 : 400, lineHeight: 1.4 }}>
+            <span style={{ fontSize: '0.9rem', color: isSelected ? 'var(--primary-dark)' : 'var(--text)', fontWeight: isSelected ? 600 : 400, lineHeight: 1.4 }}>
               {opt}
             </span>
           </button>
@@ -238,7 +238,8 @@ const AdaptationPanel = ({ plan, moduleId }) => {
                       gap: '0.3rem',
                     }}
                   >
-                    🎯 {gap.topicTitle} ({Math.round(gap.mastery * 100)}%)
+                    <HiSparkles style={{ color: 'var(--primary)', fontSize: '0.85rem' }} />
+                    <span>{gap.topicTitle} ({Math.round(gap.mastery * 100)}%)</span>
                   </Link>
                 ))}
               </div>
@@ -312,35 +313,36 @@ const ResultScreen = ({ result, quiz, timeTaken, onReopenCelebration }) => {
         {/* Gamification summary pill if available */}
         {gamification && (
           <div style={{
-            background: 'linear-gradient(135deg, #1a1d2e 0%, #222639 100%)',
-            borderRadius: 12,
+            background: 'var(--bg)',
+            borderRadius: 'var(--radius-sm)',
             padding: '0.85rem 1.25rem',
-            color: '#fff',
+            color: 'var(--text)',
             marginBottom: '1.25rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            border: '1.5px solid rgba(74, 222, 128, 0.4)',
-            boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+            border: '1px solid var(--border)',
+            boxShadow: 'var(--shadow-sm)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <div style={{
                 width: 38,
                 height: 38,
                 borderRadius: '50%',
-                background: 'rgba(74, 222, 128, 0.2)',
+                background: 'var(--primary-container)',
+                color: 'var(--primary)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '1.2rem',
               }}>
-                ⚡
+                <HiLightningBolt />
               </div>
               <div style={{ textAlign: 'left' }}>
-                <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--green)' }}>
+                <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--primary)' }}>
                   +{gamification.xpEarned || 50} XP Awarded!
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-nav)' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                   Level {gamification.level || 1} · {gamification.levelTitle || 'Coder'}
                 </div>
               </div>
@@ -351,12 +353,13 @@ const ResultScreen = ({ result, quiz, timeTaken, onReopenCelebration }) => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.35rem',
-                background: 'rgba(255,255,255,0.08)',
+                background: 'var(--warning-bg)',
+                border: '1px solid var(--warning-border)',
                 padding: '0.35rem 0.75rem',
-                borderRadius: 20,
+                borderRadius: 'var(--radius-full)',
               }}>
-                <span>🔥</span>
-                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#f59e0b' }}>
+                <HiFire style={{ color: 'var(--warning)', fontSize: '1.1rem' }} />
+                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--warning)' }}>
                   {gamification.streak || 1}d Streak
                 </span>
               </div>
@@ -364,17 +367,21 @@ const ResultScreen = ({ result, quiz, timeTaken, onReopenCelebration }) => {
                 <button
                   onClick={onReopenCelebration}
                   style={{
-                    background: 'none',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    color: '#fff',
+                    background: '#ffffff',
+                    border: '1px solid var(--border)',
+                    color: 'var(--primary)',
                     borderRadius: 8,
-                    padding: '0.35rem 0.6rem',
-                    fontSize: '0.75rem',
+                    padding: '0.35rem 0.65rem',
+                    fontSize: '0.78rem',
+                    fontWeight: 600,
                     cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
                   }}
                   title="View Rewards"
                 >
-                  🎉
+                  <HiSparkles /> Rewards
                 </button>
               )}
             </div>
@@ -409,7 +416,7 @@ const ResultScreen = ({ result, quiz, timeTaken, onReopenCelebration }) => {
             <Link
               to={`/student/adaptive/${moduleId}${adaptation?.topicId ? `?topicId=${adaptation.topicId}&forceNew=true` : ''}`}
               className="btn btn-primary"
-              style={{ fontSize: '0.85rem', background: 'var(--green)', color: 'var(--navy)', fontWeight: 700 }}
+              style={{ fontSize: '0.85rem' }}
             >
               <HiLightningBolt /> Adaptive Skill Arena (+50 XP)
             </Link>
@@ -587,7 +594,7 @@ const QuizAttempt = () => {
 
       {/* Overall progress bar */}
       <div style={{ height: 5, background: 'var(--border)', borderRadius: 999, marginBottom: '1.5rem', overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: `${(answered / total) * 100}%`, background: 'var(--green)', borderRadius: 999, transition: 'width 0.3s ease' }} />
+        <div style={{ height: '100%', width: `${(answered / total) * 100}%`, background: 'var(--primary)', borderRadius: 999, transition: 'width 0.3s ease' }} />
       </div>
 
       {/* Question dot nav */}
@@ -602,10 +609,10 @@ const QuizAttempt = () => {
               style={{
                 width: 32, height: 32, borderRadius: '50%', border: 'none',
                 fontWeight: 700, fontSize: '0.72rem', cursor: 'pointer',
-                background: isCur ? 'var(--navy)' : isAns ? 'var(--green)' : 'var(--border)',
+                background: isCur ? 'var(--primary)' : isAns ? 'var(--success)' : 'var(--border)',
                 color: (isCur || isAns) ? '#fff' : 'var(--text-muted)',
                 transition: 'all 0.15s',
-                outline: isCur ? '2px solid var(--navy)' : 'none',
+                outline: isCur ? '2px solid var(--primary)' : 'none',
                 outlineOffset: 2,
               }}
             >
@@ -617,7 +624,7 @@ const QuizAttempt = () => {
 
       {/* Question card */}
       <div style={{ maxWidth: 720 }}>
-        <div className="card" style={{ marginBottom: '1rem', borderTop: `3px solid ${timeIsLow ? 'var(--danger)' : 'var(--navy)'}` }}>
+        <div className="card" style={{ marginBottom: '1rem', borderTop: `3px solid ${timeIsLow ? 'var(--danger)' : 'var(--primary)'}` }}>
           <QuestionCard
             question={question}
             qIdx={current}
@@ -647,7 +654,7 @@ const QuizAttempt = () => {
               className="btn btn-primary"
               onClick={handleSubmit}
               disabled={submitting}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: answered === total ? 'var(--green)' : undefined, color: answered === total ? 'var(--navy)' : undefined }}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
             >
               {submitting ? <><span className="btn-spinner" /> Submitting…</> : <>Submit Quiz <HiCheckCircle /></>}
             </button>

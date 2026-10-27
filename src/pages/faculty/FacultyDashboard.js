@@ -29,7 +29,7 @@ const UsageWidget = () => {
   const { todayCount, dailyLimit, todayPercent, weekCount, totalCount, dailyBreakdown } = usage;
   const isCritical = todayPercent >= 90;
   const isWarning  = todayPercent >= 70;
-  const barColor   = isCritical ? 'var(--danger)' : isWarning ? 'var(--warning)' : 'var(--green)';
+  const barColor   = isCritical ? 'var(--danger)' : isWarning ? 'var(--warning)' : 'var(--success)';
   const remaining  = Math.max(0, dailyLimit - todayCount);
 
   return (

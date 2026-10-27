@@ -36,19 +36,19 @@ const AdaptiveContentPanel = ({ plan, moduleId }) => {
   if (!plan) return null;
 
   if (plan.hasGap) {
-    const actionColor = plan.action === 'remediate' ? '#ef4444' : plan.action === 'reinforce' ? '#f59e0b' : 'var(--success)';
-    const actionLabel = plan.action === 'remediate' ? '🐞 Bug/Gap Detected (+75 XP)' : plan.action === 'reinforce' ? '⚡ Skill Level-Up (+50 XP)' : '🌟 Mastery Advance (+75 XP)';
+    const actionColor = plan.action === 'remediate' ? '#2563eb' : plan.action === 'reinforce' ? '#d97706' : 'var(--success)';
+    const actionLabel = plan.action === 'remediate' ? 'Recommended Review' : plan.action === 'reinforce' ? 'Practice Concept' : 'Advanced Exploration';
 
     return (
       <div style={{ border: `1px solid ${actionColor}33`, borderLeft: `4px solid ${actionColor}`, borderRadius: 10, padding: '1rem', background: '#fff', marginBottom: '1.25rem', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
-        <div style={{ fontSize: '0.68rem', fontWeight: 800, color: actionColor, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.25rem' }}>
+        <div style={{ fontSize: '0.72rem', fontWeight: 700, color: actionColor, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>
           {actionLabel}
         </div>
-        <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--text)', marginBottom: '0.2rem' }}>
+        <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text)', marginBottom: '0.25rem' }}>
           {plan.topicTitle}
         </div>
-        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
-          Mastery: <strong>{Math.round(plan.mastery * 100)}%</strong> · Trend: {plan.trend} · Level: {plan.difficulty}
+        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
+          Understanding: <strong>{Math.round(plan.mastery * 100)}%</strong>
         </div>
         <Link
           to={`/student/adaptive/${moduleId}?topicId=${plan.topicId}&forceNew=true`}
@@ -62,7 +62,7 @@ const AdaptiveContentPanel = ({ plan, moduleId }) => {
           onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
           onMouseLeave={e => e.currentTarget.style.opacity = '1'}
         >
-          <HiLightningBolt /> Launch Targeted Practice
+          <HiLightningBolt /> Practice Concept with AI
         </Link>
       </div>
     );
@@ -70,42 +70,49 @@ const AdaptiveContentPanel = ({ plan, moduleId }) => {
 
   if (plan.noActionReason === 'all_mastered') {
     return (
-      <div style={{ border: '1px solid rgba(34,197,94,0.3)', borderLeft: '4px solid var(--success)', borderRadius: 10, padding: '1rem', background: '#f0fdf4', marginBottom: '1.25rem' }}>
-        <div style={{ fontSize: '0.68rem', fontWeight: 800, color: 'var(--success)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.25rem' }}>
-          All Mastered
+      <div style={{ border: '1px solid rgba(5,150,105,0.25)', borderLeft: '4px solid var(--success)', borderRadius: 'var(--radius)', padding: '1rem', background: '#ecfdf5', marginBottom: '1.25rem' }}>
+        <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--success)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>
+          Well Done
         </div>
-        <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text)', marginBottom: '0.5rem' }}>
-          Topics Mastered (≥80%)
+        <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)', marginBottom: '0.5rem' }}>
+          All topics in this module are understood (≥80%)
         </div>
         <Link
           to={`/student/adaptive/${moduleId}?allowAdvance=true`}
           style={{
             display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
-            padding: '0.45rem 0.9rem', borderRadius: 7,
-            background: 'var(--green)', color: 'var(--navy)',
-            fontWeight: 800, fontSize: '0.78rem', textDecoration: 'none',
+            padding: '0.45rem 0.9rem', borderRadius: 'var(--radius-sm)',
+            background: 'var(--primary)', color: '#fff',
+            fontWeight: 700, fontSize: '0.78rem', textDecoration: 'none',
           }}
         >
-          <HiLightningBolt /> Mastery Challenge
+          <HiLightningBolt /> Challenge Practice
         </Link>
       </div>
     );
   }
 
-  if (plan.noActionReason === 'insufficient_data') {
-    return (
-      <div style={{ border: '1px solid var(--border)', borderLeft: '4px solid var(--navy)', borderRadius: 10, padding: '1rem', background: '#fff', marginBottom: '1.25rem' }}>
-        <div style={{ fontSize: '0.68rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.25rem' }}>
-          Adaptive Learning
-        </div>
-        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-          Take quizzes on this module (3+ attempts per topic) to unlock personalized adaptive practice.
-        </div>
+  return (
+    <div style={{ border: '1px solid var(--border)', borderLeft: '4px solid var(--primary)', borderRadius: 'var(--radius)', padding: '1rem', background: 'var(--surface)', marginBottom: '1.25rem', boxShadow: 'var(--shadow-sm)' }}>
+      <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.25rem' }}>
+        Interactive AI Practice
       </div>
-    );
-  }
-
-  return null;
+      <div style={{ fontSize: '0.82rem', color: 'var(--text-sub)', lineHeight: 1.5, marginBottom: '0.75rem' }}>
+        Learn and practice any topic in this module with interactive animations and instant AI explanations.
+      </div>
+      <Link
+        to={`/student/adaptive/${moduleId}`}
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+          padding: '0.45rem 0.9rem', borderRadius: 'var(--radius-sm)',
+          background: 'var(--primary)', color: '#fff',
+          fontWeight: 700, fontSize: '0.78rem', textDecoration: 'none',
+        }}
+      >
+        <HiLightningBolt style={{ color: '#f59e0b' }} /> Start AI Practice
+      </Link>
+    </div>
+  );
 };
 
 // ─── Difficulty colour map ────────────────────────────────────────────────────
@@ -123,9 +130,9 @@ const TopicItem = ({ topic, idx, active, completed, onClick }) => (
       display: 'flex', alignItems: 'center', gap: '0.65rem',
       width: '100%', textAlign: 'left',
       padding: '0.65rem 0.75rem',
-      borderRadius: 8, border: 'none',
-      background: active ? 'var(--green-glow)' : 'transparent',
-      borderLeft: `3px solid ${active ? 'var(--green)' : 'transparent'}`,
+      borderRadius: 'var(--radius-sm)', border: 'none',
+      background: active ? 'var(--primary-light)' : 'transparent',
+      borderLeft: `3px solid ${active ? 'var(--primary)' : 'transparent'}`,
       cursor: 'pointer', transition: 'all 0.15s',
       marginBottom: 2,
     }}
@@ -134,7 +141,7 @@ const TopicItem = ({ topic, idx, active, completed, onClick }) => (
       width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontSize: '0.7rem', fontWeight: 700,
-      background: completed ? 'var(--green)' : active ? 'var(--navy)' : 'var(--border)',
+      background: completed ? 'var(--success)' : active ? 'var(--primary)' : 'var(--border)',
       color: completed || active ? '#fff' : 'var(--text-muted)',
       transition: 'all 0.2s',
     }}>
@@ -142,7 +149,7 @@ const TopicItem = ({ topic, idx, active, completed, onClick }) => (
     </div>
     <span style={{
       fontSize: '0.82rem', fontWeight: active ? 600 : 400,
-      color: active ? 'var(--green-dark)' : 'var(--text-sub)',
+      color: active ? 'var(--primary-dark)' : 'var(--text-sub)',
       lineHeight: 1.35, flex: 1,
     }}>
       {topic.title}
@@ -191,7 +198,7 @@ const TopicContent = ({ topic, idx, total, onPrev, onNext, moduleId }) => {
         {/* Topic progress strip */}
         <div style={{ marginTop: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <div style={{ flex: 1, height: 4, background: 'var(--border)', borderRadius: 999, overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${((idx + 1) / total) * 100}%`, background: 'var(--green)', borderRadius: 999, transition: 'width 0.4s ease' }} />
+            <div style={{ height: '100%', width: `${((idx + 1) / total) * 100}%`, background: 'var(--primary)', borderRadius: 999, transition: 'width 0.4s ease' }} />
           </div>
           <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
             {idx + 1}/{total}
@@ -210,12 +217,12 @@ const TopicContent = ({ topic, idx, total, onPrev, onNext, moduleId }) => {
       {content?.explanation && (
         <div style={{ marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.6rem' }}>
-            <HiInformationCircle style={{ color: '#3b82f6', fontSize: '1rem', flexShrink: 0 }} />
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <HiInformationCircle style={{ color: 'var(--primary)', fontSize: '1rem', flexShrink: 0 }} />
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               How it works
             </span>
           </div>
-          <p style={{ fontSize: '0.9rem', lineHeight: 1.75, color: 'var(--text-sub)', padding: '0.875rem 1rem', background: '#eff6ff', borderRadius: 8, borderLeft: '3px solid #3b82f6' }}>
+          <p style={{ fontSize: '0.9rem', lineHeight: 1.75, color: 'var(--text-sub)', padding: '0.875rem 1rem', background: 'var(--primary-light)', borderRadius: 8, borderLeft: '3px solid var(--primary)' }}>
             {content.explanation}
           </p>
         </div>
@@ -225,12 +232,12 @@ const TopicContent = ({ topic, idx, total, onPrev, onNext, moduleId }) => {
       {content?.realWorldExample && (
         <div style={{ marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.6rem' }}>
-            <HiLightningBolt style={{ color: '#f59e0b', fontSize: '1rem', flexShrink: 0 }} />
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#d97706', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <HiLightningBolt style={{ color: 'var(--warning)', fontSize: '1rem', flexShrink: 0 }} />
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#b45309', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               Real-world example
             </span>
           </div>
-          <p style={{ fontSize: '0.9rem', lineHeight: 1.75, color: 'var(--text-sub)', padding: '0.875rem 1rem', background: '#fffbeb', borderRadius: 8, borderLeft: '3px solid #f59e0b' }}>
+          <p style={{ fontSize: '0.9rem', lineHeight: 1.75, color: 'var(--text-sub)', padding: '0.875rem 1rem', background: '#fffbeb', borderRadius: 8, borderLeft: '3px solid var(--warning)' }}>
             {content.realWorldExample}
           </p>
         </div>
@@ -240,15 +247,15 @@ const TopicContent = ({ topic, idx, total, onPrev, onNext, moduleId }) => {
       {content?.keyPoints?.length > 0 && (
         <div style={{ marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.75rem' }}>
-            <HiCheckCircle style={{ color: 'var(--green)', fontSize: '1rem', flexShrink: 0 }} />
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--green-dark)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <HiCheckCircle style={{ color: 'var(--success)', fontSize: '1rem', flexShrink: 0 }} />
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--success)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               Key takeaways
             </span>
           </div>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {content.keyPoints.map((point, i) => (
               <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', fontSize: '0.875rem', color: 'var(--text-sub)', lineHeight: 1.6 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--green)', flexShrink: 0, marginTop: '0.45rem' }} />
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)', flexShrink: 0, marginTop: '0.45rem' }} />
                 {point}
               </li>
             ))}
@@ -393,7 +400,7 @@ const ModuleView = () => {
 
       {/* Module progress bar */}
       <div style={{ height: 4, background: 'var(--border)', borderRadius: 999, marginBottom: '1.5rem', overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: `${topics.length ? (completedCount / topics.length) * 100 : 0}%`, background: 'var(--green)', borderRadius: 999, transition: 'width 0.4s ease' }} />
+        <div style={{ height: '100%', width: `${topics.length ? (completedCount / topics.length) * 100 : 0}%`, background: 'var(--primary)', borderRadius: 999, transition: 'width 0.4s ease' }} />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '1.25rem', alignItems: 'start' }}>
@@ -466,10 +473,10 @@ const ModuleView = () => {
 
           {/* All done CTA */}
           {allDone && quizzes.length > 0 && (
-            <div style={{ padding: '1rem', background: 'var(--green-glow)', borderRadius: 10, border: '1px solid rgba(74,222,128,0.3)', textAlign: 'center' }}>
-              <HiAcademicCap style={{ fontSize: '1.5rem', color: 'var(--green-dark)', marginBottom: '0.4rem' }} />
-              <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--green-dark)', marginBottom: '0.4rem' }}>All topics read!</div>
-              <Link to={`/student/quiz/${quizzes[0]._id}`} className="btn btn-sm btn-primary" style={{ width: '100%', justifyContent: 'center', background: 'var(--green)', color: 'var(--navy)' }}>
+            <div style={{ padding: '1rem', background: 'var(--primary-light)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', textAlign: 'center' }}>
+              <HiAcademicCap style={{ fontSize: '1.5rem', color: 'var(--primary)', marginBottom: '0.4rem' }} />
+              <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--primary-dark)', marginBottom: '0.4rem' }}>All topics read!</div>
+              <Link to={`/student/quiz/${quizzes[0]._id}`} className="btn btn-sm btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
                 Take Quiz Now
               </Link>
             </div>

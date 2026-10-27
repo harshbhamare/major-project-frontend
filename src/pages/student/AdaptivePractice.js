@@ -4,8 +4,10 @@ import api from '../../services/api';
 import { getLearnerModuleSummary } from '../../services/adaptiveService';
 import {
   HiLightningBolt, HiBookOpen, HiExclamationCircle,
-  HiCheckCircle, HiInformationCircle, HiSparkles,
+  HiCheckCircle, HiInformationCircle, HiSparkles, HiArrowRight,
+  HiSearch, HiCode,
 } from 'react-icons/hi';
+import { MdBugReport, MdExtension, MdSearch } from 'react-icons/md';
 
 // ─── Mastery state config ─────────────────────────────────────────────────────
 const STATE_META = {
@@ -42,7 +44,7 @@ const ModuleCard = ({ module }) => {
       {/* Module header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h3 style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text)', marginBottom: '0.2rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <h3 style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text)', marginBottom: '0.2rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {module.title}
           </h3>
           <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
@@ -51,7 +53,7 @@ const ModuleCard = ({ module }) => {
         </div>
         {hasData && (
           <div style={{ textAlign: 'right', flexShrink: 0 }}>
-            <div style={{ fontSize: '1.25rem', fontWeight: 800, color: allMastered ? 'var(--success)' : 'var(--navy)' }}>
+            <div style={{ fontSize: '1.25rem', fontWeight: 800, color: allMastered ? 'var(--success)' : 'var(--primary)' }}>
               {Math.round(summary.avgMastery * 100)}%
             </div>
             <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 600 }}>avg mastery</div>
@@ -68,7 +70,7 @@ const ModuleCard = ({ module }) => {
 
       {/* Topic breakdown */}
       {!loading && hasData && summary.topicSummaries?.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
           {summary.topicSummaries.slice(0, 4).map(t => {
             const meta = STATE_META[t.state] || STATE_META.not_assessed;
             return (
@@ -79,12 +81,13 @@ const ModuleCard = ({ module }) => {
                   style={{
                     flex: 1, fontSize: '0.8rem', color: 'var(--text-sub)', overflow: 'hidden',
                     textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: 'none',
-                    fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.3rem',
+                    fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.35rem',
                   }}
-                  onMouseEnter={e => e.currentTarget.style.color = 'var(--navy)'}
+                  onMouseEnter={e => e.currentTarget.style.color = 'var(--primary)'}
                   onMouseLeave={e => e.currentTarget.style.color = 'var(--text-sub)'}
                 >
-                  <span style={{ color: '#f59e0b', fontSize: '0.75rem' }}>🎯</span> {t.topicTitle}
+                  <HiLightningBolt style={{ color: 'var(--primary)', fontSize: '0.85rem', flexShrink: 0 }} />
+                  <span>{t.topicTitle}</span>
                 </Link>
                 {t.mastery !== null ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
@@ -111,24 +114,24 @@ const ModuleCard = ({ module }) => {
 
       {/* No data yet */}
       {!loading && !hasData && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--text-muted)', padding: '0.75rem', background: 'var(--bg)', borderRadius: 8 }}>
-          <HiInformationCircle style={{ flexShrink: 0, fontSize: '1rem', color: 'var(--navy)' }} />
-          <span>Complete at least 3 quiz questions per topic to build initial evidence.</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.8rem', color: 'var(--text-sub)', padding: '0.75rem', background: 'var(--bg)', borderRadius: 8, border: '1px solid var(--border)' }}>
+          <HiSparkles style={{ flexShrink: 0, fontSize: '1rem', color: 'var(--primary)' }} />
+          <span>New to this module? Follow the guided path step-by-step from Step 1!</span>
         </div>
       )}
 
-      {/* Automated Mode Indicator */}
+      {/* Guided Path Indicator */}
       <div style={{
-        padding: '0.55rem 0.8rem', background: '#f8fafc',
+        padding: '0.55rem 0.8rem', background: 'var(--bg)',
         borderRadius: 8, border: '1px solid var(--border)',
         marginTop: '0.25rem', marginBottom: '0.5rem',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
-        <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-sub)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-          <HiSparkles style={{ color: '#22c55e' }} /> Question Format:
+        <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-sub)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+          <HiSparkles style={{ color: 'var(--primary)' }} /> Learning Mode:
         </div>
-        <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#15803d', background: '#dcfce7', border: '1px solid #bbf7d0', padding: '0.15rem 0.5rem', borderRadius: 6 }}>
-          ⚡ Auto-Selected by Module
+        <span style={{ fontSize: '0.74rem', fontWeight: 600, color: 'var(--primary)', background: 'var(--primary-container)', border: '1px solid rgba(26,86,219,0.2)', padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-full)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+          Guided Practice
         </span>
       </div>
 
@@ -138,41 +141,24 @@ const ModuleCard = ({ module }) => {
           <Link
             to={`/student/adaptive/${module._id}?allowAdvance=true`}
             className="btn btn-primary"
-            style={{
-              flex: 1, justifyContent: 'center', fontSize: '0.85rem',
-              background: 'var(--green)', color: 'var(--navy)', fontWeight: 800,
-            }}
+            style={{ flex: 1, fontSize: '0.85rem' }}
           >
-            <HiSparkles /> Mastery Challenge (Advance)
-          </Link>
-        ) : gapsCount > 0 ? (
-          <Link
-            to={`/student/adaptive/${module._id}`}
-            className="btn btn-primary"
-            style={{
-              flex: 1, justifyContent: 'center', fontSize: '0.85rem',
-              background: 'var(--green)', color: 'var(--navy)', fontWeight: 800,
-            }}
-          >
-            <HiLightningBolt /> Start Practice ({gapsCount} gap{gapsCount !== 1 ? 's' : ''})
+            <HiSparkles /> Review & Advance
           </Link>
         ) : (
           <Link
             to={`/student/adaptive/${module._id}`}
             className="btn btn-primary"
-            style={{
-              flex: 1, justifyContent: 'center', fontSize: '0.85rem',
-              background: 'var(--green)', color: 'var(--navy)', fontWeight: 800,
-            }}
+            style={{ flex: 1, fontSize: '0.85rem' }}
           >
-            <HiLightningBolt /> Start Automated Practice
+            <span>Start Practice</span> <HiArrowRight />
           </Link>
         )}
         <Link
           to={`/student/modules/${module._id}`}
           className="btn btn-secondary"
           title="Open Module Details"
-          style={{ fontSize: '0.85rem' }}
+          style={{ fontSize: '0.85rem', padding: '0 0.75rem' }}
         >
           <HiBookOpen />
         </Link>
@@ -201,67 +187,68 @@ const AdaptivePractice = () => {
     <div>
       <div className="page-header">
         <div>
-          <h1 className="page-title">Adaptive Skill Arena</h1>
+          <h1 className="page-title">AI Practice Hub</h1>
           <p className="page-subtitle">
-            Target your weak concepts, squash code bugs, and earn bonus XP to level up!
+            Learn and practice concepts across your modules with step-by-step AI guidance and interactive visuals.
           </p>
         </div>
       </div>
 
-      {/* Student-Friendly Arena Hero */}
+      {/* Material Hero Card */}
       {modules.length > 0 && (
-        <div style={{
-          padding: '1.5rem',
-          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-          borderRadius: 16,
+        <div className="card" style={{
+          padding: '1.75rem',
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)',
+          borderRadius: 'var(--radius-lg)',
           color: '#fff',
           marginBottom: '1.75rem',
-          boxShadow: '0 8px 24px rgba(15,23,42,0.18)',
+          boxShadow: 'var(--shadow-md)',
           border: '1px solid #334155',
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.75rem' }}>
             <div>
-              <div style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <HiSparkles /> Personalized Challenge Engine
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <HiSparkles /> Adaptive Learning Platform
               </div>
-              <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#fff', margin: 0 }}>
-                Level Up Your Coding Mastery
+              <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.01em' }}>
+                Personalized Learning & Skill Reinforcement
               </h2>
             </div>
             <div style={{
               display: 'flex', alignItems: 'center', gap: '0.4rem',
-              padding: '0.3rem 0.75rem', borderRadius: 20,
-              background: 'rgba(74, 222, 128, 0.15)', border: '1px solid rgba(74, 222, 128, 0.3)',
-              fontSize: '0.75rem', fontWeight: 700, color: 'var(--green)',
+              padding: '0.35rem 0.85rem', borderRadius: 'var(--radius-full)',
+              background: 'rgba(255, 255, 255, 0.12)', border: '1px solid rgba(255, 255, 255, 0.2)',
+              fontSize: '0.75rem', fontWeight: 600, color: '#bfdbfe',
             }}>
-              <HiLightningBolt /> Adaptive Missions Active
+              <HiLightningBolt style={{ color: '#60a5fa' }} /> Adaptive Practice
             </div>
           </div>
-          <p style={{ fontSize: '0.9rem', color: '#cbd5e1', marginBottom: '1.25rem', lineHeight: 1.6, maxWidth: 680 }}>
-            Every challenge is tailored to where you need practice the most. Directly edit buggy code, fill in code snippets, trace program outputs, and conquer realistic scenarios to master each topic.
+          <p style={{ fontSize: '0.9rem', color: '#cbd5e1', marginBottom: '1.35rem', lineHeight: 1.6, maxWidth: 680 }}>
+            Every session provides clear explanations, animated step-by-step visualizations, and targeted practice tailored to your current mastery level.
           </p>
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '0.85rem', flexWrap: 'wrap', alignItems: 'center' }}>
             <Link
               to={`/student/adaptive/${modules[0]._id}`}
               className="btn btn-primary"
               style={{
-                background: 'var(--green)', color: 'var(--navy)',
-                fontWeight: 800, fontSize: '0.88rem', padding: '0.6rem 1.25rem',
-                border: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-                boxShadow: '0 4px 14px rgba(74,222,128,0.3)',
+                background: '#ffffff', color: 'var(--primary)',
+                fontWeight: 700, fontSize: '0.88rem', padding: '0.65rem 1.35rem',
+                border: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
+                boxShadow: 'var(--shadow-sm)',
               }}
             >
-              <HiLightningBolt /> Jump Into Practice ({modules[0].title})
+              <span>Start Practice: {modules[0].title}</span>
+              <HiArrowRight style={{ fontSize: '1rem' }} />
             </Link>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <span style={{ padding: '0.35rem 0.65rem', borderRadius: 8, background: 'rgba(255,255,255,0.08)', fontSize: '0.78rem', color: '#e2e8f0', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
-                🐞 <strong>Debugging</strong> (+75 XP)
+              <span style={{ padding: '0.35rem 0.75rem', borderRadius: 'var(--radius-full)', background: 'rgba(255,255,255,0.08)', fontSize: '0.78rem', color: '#e2e8f0', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <MdBugReport style={{ color: '#f87171' }} /> <strong>Debugging</strong>
               </span>
-              <span style={{ padding: '0.35rem 0.65rem', borderRadius: 8, background: 'rgba(255,255,255,0.08)', fontSize: '0.78rem', color: '#e2e8f0', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
-                🧩 <strong>Code Completion</strong> (+50 XP)
+              <span style={{ padding: '0.35rem 0.75rem', borderRadius: 'var(--radius-full)', background: 'rgba(255,255,255,0.08)', fontSize: '0.78rem', color: '#e2e8f0', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <MdExtension style={{ color: '#60a5fa' }} /> <strong>Code Completion</strong>
               </span>
-              <span style={{ padding: '0.35rem 0.65rem', borderRadius: 8, background: 'rgba(255,255,255,0.08)', fontSize: '0.78rem', color: '#e2e8f0', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
-                🔍 <strong>Code Tracing</strong> (+50 XP)
+              <span style={{ padding: '0.35rem 0.75rem', borderRadius: 'var(--radius-full)', background: 'rgba(255,255,255,0.08)', fontSize: '0.78rem', color: '#e2e8f0', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <MdSearch style={{ color: '#4ade80' }} /> <strong>Code Tracing</strong>
               </span>
             </div>
           </div>

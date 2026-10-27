@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
-import { HiClipboardList, HiClock, HiBookOpen, HiLightningBolt } from 'react-icons/hi';
+import { HiClipboardList, HiClock, HiBookOpen, HiLightningBolt, HiArrowRight } from 'react-icons/hi';
 
 const StudentResults = () => {
   const [results, setResults] = useState([]);
@@ -111,7 +111,7 @@ const StudentResults = () => {
                             transition: 'all 0.15s ease',
                           }}
                         >
-                          <HiLightningBolt style={{ fontSize: '0.8rem' }} /> {t.title} ➔
+                          <HiLightningBolt style={{ fontSize: '0.8rem' }} /> {t.title} <HiArrowRight style={{ fontSize: '0.8rem' }} />
                         </Link>
                       );
                     })}

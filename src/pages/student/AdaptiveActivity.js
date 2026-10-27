@@ -5,54 +5,28 @@ import {
   submitAdaptiveActivity,
 } from '../../services/adaptiveService';
 import {
-  HiLightningBolt, HiCheckCircle, HiXCircle, HiArrowRight,
-  HiAcademicCap, HiInformationCircle, HiExclamationCircle,
-  HiRefresh, HiChevronRight, HiCode, HiEye, HiSparkles,
+  HiCheckCircle, HiArrowRight,
+  HiExclamationCircle,
+  HiRefresh, HiSparkles,
+  HiLightBulb, HiChevronLeft, HiBookOpen,
+  HiCheck, HiX, HiPencilAlt, HiVideoCamera,
 } from 'react-icons/hi';
 
-import { useAuth } from '../../context/AuthContext';
-import CodeSnippetEditor from '../../components/CodeSnippetEditor';
-import CelebrationModal from '../../components/CelebrationModal';
+import InteractiveConceptAnimator from '../../components/InteractiveConceptAnimator';
 
-// ─── Constants & Metadata ─────────────────────────────────────────────────────
 const OPTION_LABELS = ['A', 'B', 'C', 'D'];
 
-const ACTION_LABEL = {
-  remediate: { text: 'Foundation Review', color: '#2563eb', bg: '#eff6ff' },
-  reinforce: { text: 'Skill Practice', color: '#d97706', bg: '#fffbeb' },
-  advance:   { text: 'Mastery Challenge', color: 'var(--success)', bg: '#f0fdf4' },
-};
-
-const STRATEGY_LABEL = {
-  worked_examples:          'Step-by-Step Examples',
-  remedial_explanation:     'Core Concept Guide',
-  misconception_correction: 'Common Mistakes & Fixes',
-  targeted_practice:        'Guided Practice',
-  advanced_practice:        'In-Depth Mastery',
-};
-
-const FORMAT_LABEL = {
-  mcq:             'Multiple Choice',
-  short_answer:    'Short Answer',
-  code_completion: 'Code Completion',
-  code_tracing:    'Code Tracing',
-  debugging:       'Debugging',
-  scenario_based:  'Scenario-Based',
-};
-
-const OBJECTIVE_FORMATS = ['mcq', 'scenario_based'];
-
-// ─── Helper: Format code snippets into instructions vs code ───────────────────
-function formatCodePrompt(rawText) {
+// Helper to separate prompt and code blocks from raw question text
+function formatQuestionText(rawText) {
   if (!rawText) return { prompt: '', code: '' };
   const text = rawText.toString().trim();
   const fenceMatch = text.match(/```(?:[a-zA-Z]*)\n([\s\S]*?)```/);
   if (fenceMatch) {
-    const prompt = text.replace(fenceMatch[0], '').trim();
-    const code = fenceMatch[1].trim();
-    return { prompt, code };
+    return {
+      prompt: text.replace(fenceMatch[0], '').trim(),
+      code: fenceMatch[1].trim(),
+    };
   }
-  // Check for lines starting with code indicators (function, let, const, def, class, etc.)
   const lines = text.split('\n');
   const codeIdx = lines.findIndex(l => /^(function|const|let|var|class|def|for|while|if|import|\/\/|\/\*)/.test(l.trim()));
   if (codeIdx > 0) {
@@ -64,457 +38,89 @@ function formatCodePrompt(rawText) {
   return { prompt: text, code: '' };
 }
 
-// ─── Plan Badges ──────────────────────────────────────────────────────────────
-const PlanBadges = ({ plan }) => {
-  const ac = ACTION_LABEL[plan.action] || { text: plan.action || 'Practice', color: 'var(--info)' };
-  const difficultyText = plan.difficulty === 'easy' ? 'Beginner' : plan.difficulty === 'advanced' ? 'Advanced' : 'Intermediate';
-  const badges = [
-    { label: ac.text,                                                     color: ac.color   },
-    { label: FORMAT_LABEL[plan.assessmentFormat] || plan.assessmentFormat, color: '#6d28d9' },
-    { label: difficultyText,                                              color: plan.difficulty === 'easy' ? '#16a34a' : '#475569' },
-  ];
-  return (
-    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
-      {badges.map(({ label, color }) => label ? (
-        <span key={label} style={{
-          fontSize: '0.74rem', fontWeight: 700, padding: '0.22rem 0.65rem',
-          borderRadius: 999, background: `${color}14`, color,
-          border: `1px solid ${color}33`, textTransform: 'capitalize',
-        }}>
-          {label}
-        </span>
-      ) : null)}
-    </div>
-  );
-};
+// ─── Simple Step Progress Bar ────────────────────────────────────────────────
+const StepProgressHeader = ({ chain, currentTopicId, onSelectTopic }) => {
+  if (!chain || chain.length === 0) return null;
 
-// ─── Adaptive Content Panel ───────────────────────────────────────────────────
-const ContentPanel = ({ content, plan }) => {
-  if (!content) return null;
-  const ac = ACTION_LABEL[plan?.action] || { color: '#2563eb', text: 'Learning Guide' };
+  const currentIdx = chain.findIndex(t => t.topicId?.toString() === currentTopicId?.toString());
+  const activeIndex = currentIdx >= 0 ? currentIdx : 0;
+  const currentTitle = chain[activeIndex]?.title || 'Current Topic';
+  const progressPct = Math.round(((activeIndex + 1) / chain.length) * 100);
 
   return (
     <div style={{
-      border: '1px solid var(--border)', borderLeft: `4px solid ${ac.color}`,
-      borderRadius: 12, padding: '1.5rem', background: '#fff', marginBottom: '1.5rem',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+      background: '#fff',
+      border: '1px solid var(--border)',
+      borderRadius: 12,
+      padding: '1rem 1.25rem',
+      marginBottom: '1.25rem',
+      boxShadow: 'var(--shadow-sm)',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.875rem' }}>
-        <span style={{
-          fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em',
-          color: ac.color, background: `${ac.color}15`, padding: '0.25rem 0.65rem', borderRadius: 6,
-        }}>
-          📖 {STRATEGY_LABEL[plan?.contentStrategy] || 'Learning Guide'}
-        </span>
-        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-          Review the core concept below before trying the question
-        </span>
-      </div>
-
-      {content.headline && (
-        <h3 style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--text)', marginBottom: '0.75rem', lineHeight: 1.3 }}>
-          {content.headline}
-        </h3>
-      )}
-
-      {content.explanation && (
-        <p style={{ fontSize: '0.94rem', color: 'var(--text-sub)', lineHeight: 1.75, marginBottom: '1rem' }}>
-          {content.explanation}
-        </p>
-      )}
-
-      {content.workedExample && (
-        <div style={{
-          padding: '1.1rem 1.25rem', background: '#f8fafc',
-          borderLeft: '4px solid #3b82f6', borderRadius: '0 8px 8px 0',
-          fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.65, marginBottom: '1rem',
-          border: '1px solid var(--border)', borderLeftWidth: 4,
-        }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#1d4ed8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
-            💡 Step-by-Step Example
-          </div>
-          <pre style={{
-            whiteSpace: 'pre-wrap', fontFamily: 'Consolas, Monaco, "Courier New", monospace', margin: 0,
-            fontSize: '0.88rem', background: '#0f172a', color: '#38bdf8', padding: '0.85rem 1rem', borderRadius: 8,
-          }}>{content.workedExample}</pre>
-        </div>
-      )}
-
-      {content.misconceptionAddressed && (
-        <div style={{
-          padding: '0.875rem 1.1rem', background: '#fffbeb',
-          borderLeft: '4px solid #f59e0b', borderRadius: '0 8px 8px 0',
-          fontSize: '0.88rem', color: '#92400e', lineHeight: 1.6, marginBottom: '1rem',
-        }}>
-          <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#b45309', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
-            ⚠️ Common Mistake to Avoid
-          </div>
-          {content.misconceptionAddressed}
-        </div>
-      )}
-
-      {content.keyInsight && (
-        <div style={{
-          padding: '0.75rem 1rem', background: '#f0fdf4',
-          borderRadius: 8, fontSize: '0.88rem', color: '#166534', fontWeight: 600, lineHeight: 1.55,
-          border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', gap: '0.5rem',
-        }}>
-          <HiSparkles style={{ fontSize: '1.1rem', flexShrink: 0, color: '#16a34a' }} />
-          <span><strong>Key Rule:</strong> {content.keyInsight}</span>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// ─── MCQ Options Selector ─────────────────────────────────────────────────────
-const McqOptions = ({ options, answer, onSelect }) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-    {options?.map((opt, i) => {
-      const sel = answer === opt;
-      return (
-        <button
-          key={i}
-          type="button"
-          onClick={() => onSelect(opt)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '0.875rem',
-            padding: '0.9rem 1.1rem', borderRadius: 10, textAlign: 'left',
-            border: `2px solid ${sel ? 'var(--navy)' : 'var(--border)'}`,
-            background: sel ? 'var(--navy)' : '#fff',
-            cursor: 'pointer', transition: 'all 0.15s ease',
-            boxShadow: sel ? '0 4px 12px rgba(15,23,42,0.15)' : 'none',
-          }}
-          onMouseEnter={e => { if (!sel) e.currentTarget.style.borderColor = 'var(--text-sub)'; }}
-          onMouseLeave={e => { if (!sel) e.currentTarget.style.borderColor = 'var(--border)'; }}
-        >
-          <div style={{
-            width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontWeight: 800, fontSize: '0.8rem',
-            background: sel ? 'rgba(255,255,255,0.2)' : 'var(--bg)',
-            border: `1.5px solid ${sel ? 'rgba(255,255,255,0.5)' : 'var(--border)'}`,
-            color: sel ? '#fff' : 'var(--text-sub)',
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{
+            fontSize: '0.72rem',
+            fontWeight: 700,
+            color: 'var(--primary)',
+            background: 'var(--primary-container)',
+            padding: '0.2rem 0.6rem',
+            borderRadius: 'var(--radius-full)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.3rem',
           }}>
-            {OPTION_LABELS[i]}
-          </div>
-          <span style={{ fontSize: '0.92rem', color: sel ? '#fff' : 'var(--text)', fontWeight: sel ? 600 : 400, lineHeight: 1.45 }}>
-            {opt}
+            <HiSparkles /> Step {activeIndex + 1} of {chain.length}
           </span>
-        </button>
-      );
-    })}
-  </div>
-);
-
-// ─── Dynamic Question Renderer ────────────────────────────────────────────────
-const QuestionRenderer = ({ question, answer, onSelect }) => {
-  const [showHint, setShowHint] = useState(false);
-
-  useEffect(() => {
-    setShowHint(false);
-  }, [question]);
-
-  const format = question.assessmentFormat || 'mcq';
-  const payload = question.payload || {};
-  const parsed = formatCodePrompt(question.questionText);
-
-  const questionHeader = (
-    <div style={{ marginBottom: '1.25rem' }}>
-      <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
-        <span className="badge badge-purple">{FORMAT_LABEL[format] || format}</span>
-        {question.difficulty && (
-          <span className={`badge badge-${question.difficulty === 'easy' ? 'success' : question.difficulty === 'advanced' ? 'danger' : 'info'}`}>
-            {question.difficulty === 'easy' ? 'Beginner' : question.difficulty === 'advanced' ? 'Advanced' : 'Intermediate'}
-          </span>
-        )}
-      </div>
-      {question.learningObjective && (
-        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'flex', gap: '0.35rem', alignItems: 'flex-start' }}>
-          <HiInformationCircle style={{ flexShrink: 0, marginTop: 2, color: 'var(--navy)' }} />
-          <span><strong>Objective:</strong> {question.learningObjective}</span>
+          <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'var(--text)' }}>
+            {currentTitle}
+          </h3>
         </div>
-      )}
-      {payload.hint && (
-        <div style={{ marginTop: '0.75rem' }}>
-          <button
-            type="button"
-            onClick={() => setShowHint(prev => !prev)}
-            style={{
-              background: showHint ? '#fef3c7' : '#fffbeb',
-              border: '1.5px dashed #f59e0b',
-              color: '#b45309',
-              borderRadius: 8,
-              padding: '0.3rem 0.75rem',
-              fontSize: '0.8rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-              transition: 'all 0.15s ease',
-            }}
-          >
-            💡 {showHint ? 'Hide Hint' : 'Need a Hint?'}
-          </button>
-          {showHint && (
-            <div style={{
-              marginTop: '0.5rem',
-              padding: '0.75rem 1rem',
-              background: '#fffbeb',
-              borderLeft: '3px solid #f59e0b',
-              borderRadius: '0 8px 8px 0',
-              fontSize: '0.86rem',
-              color: '#92400e',
-              lineHeight: 1.55,
-            }}>
-              <strong>💡 Hint:</strong> {payload.hint}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-
-  // 1. MCQ
-  if (format === 'mcq') {
-    const options = payload.options || question.options || [];
-    return (
-      <div>
-        {questionHeader}
-        <p style={{ fontSize: '1.02rem', fontWeight: 600, color: 'var(--text)', lineHeight: 1.6, marginBottom: '1.25rem' }}>
-          {question.questionText}
-        </p>
-        <McqOptions options={options} answer={answer} onSelect={onSelect} />
+        <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+          {progressPct}% Completed
+        </span>
       </div>
-    );
-  }
 
-  // 2. Code Tracing
-  if (format === 'code_tracing') {
-    const code = payload.codeSnippet || parsed.code || question.questionText;
-    const options = payload.options || question.options || [];
-    const language = payload.language || 'JavaScript';
-
-    return (
-      <div>
-        {questionHeader}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.5rem' }}>
-          <p style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text)', margin: 0 }}>
-            {parsed.prompt || question.questionText || 'Trace the execution and predict the output:'}
-          </p>
-          <span style={{ fontSize: '0.72rem', color: '#38bdf8', background: '#0f172a', padding: '0.15rem 0.5rem', borderRadius: 4, fontFamily: 'monospace' }}>
-            {language}
-          </span>
-        </div>
-        <pre style={{
-          background: '#0f172a', color: '#38bdf8',
-          padding: '1.1rem 1.25rem', borderRadius: 10,
-          fontSize: '0.88rem', lineHeight: 1.65, fontFamily: 'monospace',
-          overflow: 'auto', marginBottom: '1.25rem', whiteSpace: 'pre-wrap',
-          border: '1px solid #1e293b',
-        }}>
-          {code}
-        </pre>
-        {payload.variableToTrace && (
-          <div style={{ fontSize: '0.8rem', color: 'var(--navy)', marginBottom: '0.75rem', fontWeight: 600 }}>
-            Target: Trace value of <code>{payload.variableToTrace}</code>
-          </div>
-        )}
-        {options.length >= 2 ? (
-          <McqOptions options={options} answer={answer} onSelect={onSelect} />
-        ) : (
-          <div>
-            <label className="form-label" style={{ fontWeight: 600, fontSize: '0.85rem' }}>Your Predicted Output:</label>
-            <input
-              type="text"
-              className="form-control no-icon"
-              value={answer}
-              onChange={e => onSelect(e.target.value)}
-              placeholder="e.g. 15 or [1, 2, 3]"
-              style={{ fontFamily: 'monospace', fontSize: '0.95rem' }}
-            />
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // 3. Code Completion
-  if (format === 'code_completion') {
-    const code = payload.codeSnippet || parsed.code || question.questionText;
-    const language = payload.language || 'JavaScript';
-
-    return (
-      <div>
-        {questionHeader}
-        <p style={{ fontSize: '1.02rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.75rem', lineHeight: 1.5 }}>
-          {parsed.prompt || question.questionText || 'Complete the code to finish the statement:'}
-        </p>
-        <CodeSnippetEditor
-          initialCode={code}
-          language={language}
-          hint={payload.hint}
-          value={answer}
-          onChange={onSelect}
-          mode="code_completion"
-          placeholder={payload.placeholder || 'Type the missing value (e.g. 10 or "Alice")'}
-        />
-      </div>
-    );
-  }
-
-  // 4. Debugging
-  if (format === 'debugging') {
-    const code = payload.buggyCode || parsed.code || question.questionText;
-    const language = payload.language || 'JavaScript';
-
-    return (
-      <div>
-        {questionHeader}
-        <p style={{ fontSize: '1.02rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.75rem', lineHeight: 1.5 }}>
-          {parsed.prompt || question.questionText || 'Find and fix the error in the code:'}
-        </p>
-        <CodeSnippetEditor
-          initialCode={code}
-          language={language}
-          errorDescription={payload.errorDescription}
-          hint={payload.hint}
-          value={answer}
-          onChange={onSelect}
-          mode="debugging"
-          placeholder="Fix the code directly or select the line to fix..."
-        />
-      </div>
-    );
-  }
-
-  // 5. Scenario-Based
-  if (format === 'scenario_based') {
-    const scenario = payload.scenario || question.questionText;
-    const options = payload.options || question.options || [];
-
-    return (
-      <div>
-        {questionHeader}
+      {/* Progress Track */}
+      <div style={{ height: 6, background: '#f1f5f9', borderRadius: 999, overflow: 'hidden', marginBottom: '0.75rem' }}>
         <div style={{
-          padding: '1rem 1.25rem', background: '#eff6ff', borderLeft: '4px solid #3b82f6',
-          borderRadius: '0 8px 8px 0', marginBottom: '1.25rem', fontSize: '0.95rem',
-          lineHeight: 1.7, color: 'var(--text)', fontWeight: 500,
-        }}>
-          <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#1d4ed8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>
-            Realistic Scenario
-          </div>
-          {scenario}
-        </div>
-        {options.length >= 2 ? (
-          <McqOptions options={options} answer={answer} onSelect={onSelect} />
-        ) : (
-          <div>
-            <label className="form-label" style={{ fontWeight: 600, fontSize: '0.85rem' }}>Your Recommended Approach:</label>
-            <textarea
-              className="form-control no-icon"
-              value={answer}
-              onChange={e => onSelect(e.target.value)}
-              placeholder="State your decision and brief rationale..."
-              rows={4}
-              style={{ fontFamily: 'inherit', fontSize: '0.9rem', lineHeight: 1.6 }}
-            />
-          </div>
-        )}
+          height: '100%',
+          width: `${progressPct}%`,
+          background: 'var(--primary)',
+          borderRadius: 999,
+          transition: 'width 0.3s ease',
+        }} />
       </div>
-    );
-  }
 
-  // 6. Short Answer
-  return (
-    <div>
-      {questionHeader}
-      {payload.context && (
-        <div style={{
-          padding: '0.75rem 1rem', background: '#f8fafc', borderLeft: '3px solid #64748b',
-          borderRadius: '0 6px 6px 0', marginBottom: '0.75rem', fontSize: '0.84rem', color: 'var(--text-sub)',
-        }}>
-          <strong>Context:</strong> {payload.context}
-        </div>
-      )}
-      <p style={{ fontSize: '1.02rem', fontWeight: 600, color: 'var(--text)', lineHeight: 1.6, marginBottom: '1rem' }}>
-        {question.questionText}
-      </p>
-      <textarea
-        className="form-control no-icon"
-        value={answer}
-        onChange={e => onSelect(e.target.value)}
-        placeholder={payload.placeholder || "Write a clear, concise answer (1–3 sentences)..."}
-        rows={5}
-        style={{ fontFamily: 'inherit', fontSize: '0.92rem', lineHeight: 1.65 }}
-      />
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
-        <span>Suggested length: {payload.suggestedLength || "1–3 sentences"}</span>
-        <span>{answer.trim().length} character{answer.trim().length !== 1 ? 's' : ''}</span>
-      </div>
-    </div>
-  );
-};
+      {/* Clickable Step Chips */}
+      <div style={{ display: 'flex', gap: '0.45rem', overflowX: 'auto', paddingBottom: '0.2rem' }}>
+        {chain.map((step, idx) => {
+          const isCurrent = step.topicId?.toString() === currentTopicId?.toString() || (!currentTopicId && idx === 0);
+          const isDone = idx < activeIndex;
 
-// ─── Formative Explanation View ───────────────────────────────────────────────
-const ExplanationView = ({ explanation }) => {
-  if (!explanation) return null;
-
-  const hasSections = /Core Reasoning:|Misconception Avoided:|Student Pro-Tip:/i.test(explanation);
-
-  if (!hasSections) {
-    return (
-      <div style={{
-        padding: '1rem 1.25rem', background: 'var(--bg)', borderRadius: 10,
-        fontSize: '0.88rem', color: 'var(--text-sub)', lineHeight: 1.65,
-        marginBottom: '1.5rem', border: '1px solid var(--border)',
-      }}>
-        <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-          <HiLightningBolt style={{ color: '#f59e0b' }} /> Explanation & Key Insight
-        </div>
-        {explanation}
-      </div>
-    );
-  }
-
-  const lines = explanation.split('\n').filter(l => l.trim().length > 0);
-  return (
-    <div style={{
-      padding: '1.15rem 1.25rem', background: '#fff', borderRadius: 12,
-      marginBottom: '1.5rem', border: '1px solid var(--border)',
-      boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
-    }}>
-      <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--text)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-        <HiAcademicCap style={{ color: 'var(--navy)', fontSize: '1.2rem' }} /> Conceptual Breakdown & Student Notes
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-        {lines.map((line, idx) => {
-          if (/^Core Reasoning:/i.test(line)) {
-            return (
-              <div key={idx} style={{ padding: '0.65rem 0.9rem', background: '#eff6ff', borderLeft: '3px solid #3b82f6', borderRadius: '0 6px 6px 0', fontSize: '0.86rem', color: '#1e3a8a', lineHeight: 1.55 }}>
-                <strong>🧠 Core Reasoning:</strong> {line.replace(/^Core Reasoning:\s*/i, '')}
-              </div>
-            );
-          }
-          if (/^Misconception Avoided:/i.test(line)) {
-            return (
-              <div key={idx} style={{ padding: '0.65rem 0.9rem', background: '#fef2f2', borderLeft: '3px solid #ef4444', borderRadius: '0 6px 6px 0', fontSize: '0.86rem', color: '#991b1b', lineHeight: 1.55 }}>
-                <strong>⚠️ Misconception Avoided:</strong> {line.replace(/^Misconception Avoided:\s*/i, '')}
-              </div>
-            );
-          }
-          if (/^Student Pro-Tip:/i.test(line)) {
-            return (
-              <div key={idx} style={{ padding: '0.65rem 0.9rem', background: '#fffbeb', borderLeft: '3px solid #f59e0b', borderRadius: '0 6px 6px 0', fontSize: '0.86rem', color: '#92400e', lineHeight: 1.55 }}>
-                <strong>💡 Student Pro-Tip:</strong> {line.replace(/^Student Pro-Tip:\s*/i, '')}
-              </div>
-            );
-          }
           return (
-            <p key={idx} style={{ margin: 0, fontSize: '0.88rem', color: 'var(--text-sub)', lineHeight: 1.6 }}>
-              {line}
-            </p>
+            <button
+              key={step.topicId || idx}
+              type="button"
+              onClick={() => onSelectTopic(step.topicId)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                padding: '0.35rem 0.75rem',
+                borderRadius: 'var(--radius-full)',
+                fontSize: '0.75rem',
+                fontWeight: isCurrent ? 700 : 500,
+                border: `1px solid ${isCurrent ? 'var(--primary)' : isDone ? 'var(--success)' : 'var(--border)'}`,
+                background: isCurrent ? 'var(--primary)' : isDone ? '#f0fdf4' : '#fff',
+                color: isCurrent ? '#fff' : isDone ? 'var(--success)' : 'var(--text-sub)',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              {isDone ? <HiCheck style={{ fontSize: '0.85rem' }} /> : <span>{idx + 1}.</span>}
+              <span>{step.title}</span>
+            </button>
           );
         })}
       </div>
@@ -522,548 +128,683 @@ const ExplanationView = ({ explanation }) => {
   );
 };
 
-// ─── Result Feedback Panel ────────────────────────────────────────────────────
-const ResultPanel = ({ outcome, question, nextPlan, moduleId, onNext }) => {
-  const {
-    isCorrect,
-    correctAnswer,
-    explanation,
-    modelAnswer,
-    masteryBefore,
-    masteryAfter,
-    evaluator,
-    evalFeedback,
-    criteriaResults,
-  } = outcome;
-  const format = question?.assessmentFormat || 'mcq';
-  const hasOptions = Array.isArray(question?.payload?.options || question?.options) && (question?.payload?.options || question?.options).length >= 2;
-  const isObjective = format === 'mcq' || (format === 'scenario_based' && hasOptions);
-  const masteryDelta = (masteryAfter != null && masteryBefore != null)
-    ? Math.round((masteryAfter - masteryBefore) * 100)
-    : null;
-
-  return (
-    <div style={{ animation: 'slideUp 0.25s ease' }}>
-      {/* Outcome banner */}
-      <div style={{
-        padding: '1.5rem', borderRadius: 14, marginBottom: '1.5rem', textAlign: 'center',
-        background: isCorrect ? '#f0fdf4' : '#fef2f2',
-        border: `2px solid ${isCorrect ? '#bbf7d0' : '#fecaca'}`,
-      }}>
-        {isCorrect
-          ? <HiCheckCircle style={{ fontSize: '2.5rem', color: 'var(--success)', marginBottom: '0.35rem' }} />
-          : <HiXCircle     style={{ fontSize: '2.5rem', color: 'var(--danger)',  marginBottom: '0.35rem' }} />
-        }
-        <div style={{ fontWeight: 800, fontSize: '1.25rem', color: isCorrect ? '#15803d' : '#b91c1c', marginBottom: '0.35rem' }}>
-          {isCorrect ? 'Correct!' : 'Keep Going — Learning in Progress'}
-        </div>
-        {masteryDelta !== null && (
-          <div>
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-              padding: '0.35rem 0.85rem', background: '#fff', borderRadius: 999,
-              border: '1px solid var(--border)', fontSize: '0.82rem', color: 'var(--text)',
-              marginTop: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-            }}>
-              <span>Topic Mastery: <strong>{Math.round((masteryBefore ?? 0) * 100)}%</strong></span>
-              <HiArrowRight style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }} />
-              <span style={{ fontWeight: 800, color: masteryDelta >= 0 ? 'var(--success)' : 'var(--danger)' }}>
-                {Math.round((masteryAfter ?? 0) * 100)}%
-                {masteryDelta !== 0 && ` (${masteryDelta > 0 ? '+' : ''}${masteryDelta}pp)`}
-              </span>
-            </div>
-            {masteryAfter != null && (
-              <div style={{ maxWidth: 260, margin: '0.75rem auto 0 auto' }}>
-                <div style={{
-                  height: 8, background: 'rgba(0,0,0,0.08)', borderRadius: 999, overflow: 'hidden',
-                }}>
-                  <div style={{
-                    height: '100%',
-                    width: `${Math.min(100, Math.max(0, Math.round(masteryAfter * 100)))}%`,
-                    background: isCorrect ? 'var(--success)' : '#f59e0b',
-                    borderRadius: 999,
-                    transition: 'width 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                  }} />
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Evaluator Feedback & Criteria Assessment (Spec §13) */}
-      {(evalFeedback || (criteriaResults && criteriaResults.length > 0)) && (
-        <div style={{
-          padding: '1.1rem 1.25rem', background: '#fff', border: '1px solid var(--border)',
-          borderRadius: 10, marginBottom: '1.25rem', boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Pedagogical Evaluation
-            </div>
-            {evaluator && (
-              <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', background: 'var(--bg)', padding: '0.15rem 0.5rem', borderRadius: 999 }}>
-                {evaluator}
-              </span>
-            )}
-          </div>
-          {evalFeedback && (
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-sub)', margin: '0 0 0.75rem 0', lineHeight: 1.55 }}>
-              {evalFeedback}
-            </p>
-          )}
-          {criteriaResults && criteriaResults.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', paddingTop: '0.25rem', borderTop: '1px solid var(--border)' }}>
-              {criteriaResults.map((c, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem' }}>
-                  {c.passed
-                    ? <HiCheckCircle style={{ color: 'var(--success)', flexShrink: 0 }} />
-                    : <HiXCircle     style={{ color: 'var(--danger)', flexShrink: 0 }} />}
-                  <span style={{ color: c.passed ? 'var(--text)' : 'var(--text-muted)' }}>{c.criterion}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Correct answer display */}
-      {!isCorrect && isObjective && correctAnswer && (
-        <div style={{ padding: '1rem 1.25rem', background: '#eff6ff', borderLeft: '4px solid #3b82f6', borderRadius: '0 8px 8px 0', marginBottom: '1.25rem' }}>
-          <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#1d4ed8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.3rem' }}>
-            Correct Answer
-          </div>
-          <div style={{ fontSize: '0.92rem', color: 'var(--text)', fontWeight: 600 }}>{correctAnswer}</div>
-        </div>
-      )}
-
-      {/* Model answer for code or open-ended */}
-      {!isObjective && (modelAnswer || correctAnswer) && (
-        <div style={{ padding: '1rem 1.25rem', background: '#eff6ff', borderLeft: '4px solid #3b82f6', borderRadius: '0 8px 8px 0', marginBottom: '1.25rem' }}>
-          <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#1d4ed8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.3rem' }}>
-            Model Reference Solution
-          </div>
-          <pre style={{ fontSize: '0.9rem', color: 'var(--text)', whiteSpace: 'pre-wrap', fontFamily: 'monospace', margin: 0 }}>
-            {modelAnswer || correctAnswer}
-          </pre>
-        </div>
-      )}
-
-      {/* Formative Explanation View */}
-      {explanation && <ExplanationView explanation={explanation} />}
-
-      {/* Next Recommendation */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
-        {nextPlan?.hasGap && (
-          <div style={{ padding: '1.1rem', background: '#fff', borderRadius: 10, border: '1px solid var(--border)', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.3rem' }}>
-              Adaptive Recommendation Next
-            </div>
-            <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text)', marginBottom: '0.2rem' }}>
-              {nextPlan.topicTitle}
-            </div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              Strategy: <strong>{STRATEGY_LABEL[nextPlan.contentStrategy] || nextPlan.contentStrategy}</strong>
-              {' · '}Difficulty: <strong>{nextPlan.difficulty}</strong>
-              {' · '}Format: <strong>{FORMAT_LABEL[nextPlan.assessmentFormat] || nextPlan.assessmentFormat}</strong>
-            </div>
-          </div>
-        )}
-
-        {nextPlan?.noActionReason === 'all_mastered' && (
-          <div style={{ padding: '1.25rem', background: 'var(--green-glow)', borderRadius: 10, border: '1px solid rgba(74,222,128,0.4)', textAlign: 'center' }}>
-            <HiCheckCircle style={{ fontSize: '1.75rem', color: 'var(--green-dark)', marginBottom: '0.3rem' }} />
-            <div style={{ fontWeight: 800, color: 'var(--green-dark)', fontSize: '1rem', marginBottom: '0.2rem' }}>
-              All Module Topics Mastered!
-            </div>
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-sub)', margin: 0 }}>
-              You've demonstrated solid mastery across all topics in this module. You can continue with advanced evaluation challenges anytime.
-            </p>
-          </div>
-        )}
-
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
-          {(nextPlan?.hasGap || nextPlan?.canAdvance) && (
-            <button
-              className="btn btn-primary"
-              onClick={() => onNext(Boolean(nextPlan?.canAdvance))}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'var(--green)', color: 'var(--navy)' }}
-            >
-              <HiRefresh /> {nextPlan?.canAdvance ? 'Take Mastery Challenge' : 'Next Adaptive Question'}
-            </button>
-          )}
-          <Link to="/student/adaptive" className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            All Modules
-          </Link>
-          <Link to={`/student/modules/${moduleId}`} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            Back to Module
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ─── Automated Question Format Indicator ──────────────────────────────────────
-const FORMAT_ICONS = {
-  debugging: '🐞',
-  code_tracing: '🔍',
-  code_completion: '🧩',
-  scenario_based: '🏛️',
-  short_answer: '✍️',
-  mcq: '🔘',
-};
-
-const AutomatedFormatBadge = ({ format }) => {
-  const label = FORMAT_LABEL[format] || format || 'Practice Exercise';
-  const icon = FORMAT_ICONS[format] || '📝';
-
-  return (
-    <div style={{
-      display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-      padding: '0.4rem 0.85rem', background: '#f8fafc',
-      border: '1px solid var(--border)', borderRadius: 8,
-      marginBottom: '1rem', fontSize: '0.82rem', color: 'var(--text-sub)',
-    }}>
-      <span style={{ fontSize: '1rem' }}>{icon}</span>
-      <span style={{ fontWeight: 700, color: 'var(--text)' }}>{label}</span>
-      <span style={{ color: 'var(--text-muted)' }}>· Hands-on Learning</span>
-    </div>
-  );
-};
-
-// ─── Main AdaptiveActivity Component ──────────────────────────────────────────
+// ─── Main Simple Adaptive Learning Page ───────────────────────────────────────
 const AdaptiveActivity = () => {
   const { moduleId } = useParams();
   const [searchParams] = useSearchParams();
-  const initialTopicId = searchParams.get('topicId') || '';
 
-  const { updateGamification } = useAuth();
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [celebrationData, setCelebrationData] = useState(null);
+  // Read initial topicId from URL search params ONCE on mount
+  const initialTopicRef = useRef(searchParams.get('topicId') || null);
 
-  const [phase, setPhase]             = useState('loading');
-  const [activity, setActivity]       = useState(null);
-  const [answer, setAnswer]           = useState('');
-  const [outcome, setOutcome]         = useState(null);
-  const [errorMsg, setErrorMsg]       = useState('');
-  const [activeTopicId]               = useState(initialTopicId);
+  const [loading, setLoading]               = useState(true);
+  const [transitioning, setTransitioning]   = useState(false);
+  const [activity, setActivity]             = useState(null);
+  const [currentTopicId, setCurrentTopicId] = useState(initialTopicRef.current);
+  const [errorMsg, setErrorMsg]             = useState('');
 
-  // Guard to prevent duplicate requests on mount in React 18 Strict Mode
-  const loadingRef = useRef(false);
+  // Practice state
+  const [selectedAnswer, setSelectedAnswer] = useState('');
+  const [isChecking, setIsChecking]         = useState(false);
+  const [outcome, setOutcome]               = useState(null);
+  const [showAnimation, setShowAnimation]   = useState(false);
+  const [completedAll, setCompletedAll]     = useState(false);
 
-  const load = useCallback(async (allowAdvance = false, forceNew = false, requestedTopicId = null) => {
-    setPhase('loading');
-    setActivity(null);
-    setAnswer('');
+  // In-flight guard to prevent duplicate concurrent API requests
+  const inFlightRef = useRef(false);
+
+  // ── Load Activity for a specific topic or module ────────────────────────────
+  const fetchLesson = useCallback(async (targetTopicId = null, forceNew = false) => {
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
+
+    // If we already have content, show subtle inline transition instead of wiping screen
+    if (activity) {
+      setTransitioning(true);
+    } else {
+      setLoading(true);
+    }
+
+    setSelectedAnswer('');
     setOutcome(null);
     setErrorMsg('');
-    loadingRef.current = true;
-
-    const topicToUse = requestedTopicId !== null ? requestedTopicId : activeTopicId;
+    setShowAnimation(false);
+    setCompletedAll(false);
 
     try {
       const data = await getNextAdaptiveActivity(moduleId, {
-        allowAdvance,
-        topicId: topicToUse || undefined,
+        topicId: targetTopicId || undefined,
         forceNew,
       });
-      if (!data.hasGap && !data.isAdvancement && !topicToUse) {
+
+      if (!data.hasGap && !data.isAdvancement && !targetTopicId) {
+        setCompletedAll(true);
         setActivity(data);
-        setPhase('no_gap');
         return;
       }
 
       setActivity(data);
-      if (data.noQuestion) {
-        setPhase(data.content ? 'content_only' : 'no_gap');
-        return;
+      if (data.plan?.topicId) {
+        setCurrentTopicId(data.plan.topicId);
       }
-      setPhase(data.content ? 'content' : 'question');
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || 'Failed to generate adaptive activity.');
-      setPhase('error');
+      setErrorMsg(err.response?.data?.message || 'Unable to load lesson. Please click retry below.');
     } finally {
-      loadingRef.current = false;
+      setLoading(false);
+      setTransitioning(false);
+      inFlightRef.current = false;
     }
-  }, [moduleId, activeTopicId]);
+  }, [moduleId]); // Depends ONLY on moduleId — stable function reference!
 
+  // Trigger initial load once on mount
   useEffect(() => {
-    load(false, false, initialTopicId);
-  }, [load, initialTopicId]);
+    fetchLesson(initialTopicRef.current, false);
+  }, [fetchLesson]);
 
-  const handleSubmit = async () => {
-    if (!answer || answer.toString().trim() === '' || !activity?._id) return;
-    setPhase('submitting');
+  // ── Handle Option Selection & Answer Checking ───────────────────────────────
+  const handleCheckAnswer = async () => {
+    if (!selectedAnswer || isChecking || outcome || !activity?._id) return;
+    setIsChecking(true);
     try {
-      const data = await submitAdaptiveActivity(activity._id, answer);
-      setOutcome(data);
-      if (data.gamification) {
-        updateGamification?.(data.gamification);
-        setCelebrationData(data.gamification);
-        setShowCelebration(true);
-      }
-      setPhase('result');
+      const res = await submitAdaptiveActivity(activity._id, selectedAnswer);
+      setOutcome(res);
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || 'Submission failed. Please try again.');
-      setPhase('error');
+      setErrorMsg(err.response?.data?.message || 'Verification failed. Please try submitting again.');
+    } finally {
+      setIsChecking(false);
     }
   };
 
-  const canSubmit = answer && answer.toString().trim().length > 0;
-  const plan      = activity?.plan;
-  const content   = activity?.content;
-  const question  = activity?.question;
-  const ac        = ACTION_LABEL[plan?.action] || { text: plan?.action || 'Adaptive', color: 'var(--info)' };
+  // ── Move to Next Topic ──────────────────────────────────────────────────────
+  const handleContinueNext = () => {
+    const chain = activity?.plan?.topicChain || [];
+    const thisTopicId = activity?.plan?.topicId?.toString();
+    const currentIdx = chain.findIndex(t => t.topicId?.toString() === thisTopicId);
 
-  // ── 1. Loading Phase ────────────────────────────────────────────────────────
-  if (phase === 'loading') {
+    if (currentIdx >= 0 && currentIdx + 1 < chain.length) {
+      const nextTopic = chain[currentIdx + 1];
+      setCurrentTopicId(nextTopic.topicId);
+      fetchLesson(nextTopic.topicId, false);
+    } else if (outcome?.nextPlan?.topicId && outcome.nextPlan.topicId !== thisTopicId) {
+      setCurrentTopicId(outcome.nextPlan.topicId);
+      fetchLesson(outcome.nextPlan.topicId, false);
+    } else {
+      setCompletedAll(true);
+    }
+  };
+
+  // ── Keyboard shortcut: Enter to submit or continue ──────────────────────────
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+      if (e.key === 'Enter') {
+        if (!outcome && selectedAnswer && !isChecking) {
+          handleCheckAnswer();
+        } else if (outcome) {
+          handleContinueNext();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  });
+
+  // ── Loading Screen ──────────────────────────────────────────────────────────
+  if (loading) {
     return (
-      <div className="loading" style={{ minHeight: 360 }}>
-        <div className="spinner" />
-        <span style={{ fontWeight: 600, fontSize: '0.95rem' }}>Personalising your adaptive learning activity…</span>
+      <div style={{ maxWidth: 720, margin: '3rem auto', textAlign: 'center', padding: '2rem' }}>
+        <div className="card" style={{ padding: '3rem 2rem' }}>
+          <div className="spinner" style={{ margin: '0 auto 1.25rem' }} />
+          <h3 style={{ margin: 0, fontWeight: 700, color: 'var(--text)' }}>
+            Loading your adaptive lesson…
+          </h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginTop: '0.5rem' }}>
+            Preparing concept explanations and tailored practice questions.
+          </p>
+        </div>
       </div>
     );
   }
 
-  // ── 2. Error Phase ──────────────────────────────────────────────────────────
-  if (phase === 'error') {
+  // ── Error Screen with Clean Retry ───────────────────────────────────────────
+  if (errorMsg && !activity) {
     return (
-      <div style={{ maxWidth: 500, margin: '3rem auto' }}>
-        <div className="card" style={{ textAlign: 'center', padding: '2rem' }}>
-          <HiExclamationCircle style={{ fontSize: '2.75rem', color: 'var(--danger)', marginBottom: '0.75rem' }} />
-          <h2 style={{ fontWeight: 800, marginBottom: '0.4rem' }}>Something Went Wrong</h2>
+      <div style={{ maxWidth: 560, margin: '3rem auto' }}>
+        <div className="card" style={{ textAlign: 'center', padding: '2.5rem' }}>
+          <HiExclamationCircle style={{ fontSize: '2.8rem', color: 'var(--danger)', marginBottom: '0.75rem' }} />
+          <h2 style={{ fontWeight: 800, marginBottom: '0.5rem' }}>Could Not Load Lesson</h2>
           <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', lineHeight: 1.6 }}>{errorMsg}</p>
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
-            <button className="btn btn-primary" onClick={() => load()}><HiRefresh /> Try Again</button>
-            <Link to="/student/adaptive" className="btn btn-secondary">All Modules</Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ── 3. No Gap / Insufficient Data / Mastered Phase ───────────────────────────
-  if (phase === 'no_gap') {
-    const isMastered = activity?.noActionReason === 'all_mastered' || activity?.canAdvance;
-    return (
-      <div style={{ maxWidth: 640, margin: '2rem auto' }}>
-        <div className="card" style={{ textAlign: 'center', padding: '2.25rem' }}>
-          <HiCheckCircle style={{ fontSize: '3rem', color: isMastered ? 'var(--green)' : 'var(--navy)', marginBottom: '0.75rem' }} />
-          <h2 style={{ fontWeight: 800, marginBottom: '0.5rem' }}>
-            {isMastered ? 'All Module Topics Mastered!' : 'Unlock Adaptive Practice'}
-          </h2>
-          <p style={{ color: 'var(--text-sub)', marginBottom: '1.5rem', lineHeight: 1.65, fontSize: '0.92rem' }}>
-            {activity?.reason || 'Complete at least 3 quiz questions per topic to build initial evidence and unlock adaptive practice.'}
-          </p>
-          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '1.75rem' }}>
-            {isMastered ? (
-              <button
-                className="btn btn-primary"
-                onClick={() => load(true)}
-                style={{ background: 'var(--green)', color: 'var(--navy)', fontWeight: 800 }}
-              >
-                <HiSparkles /> Take Mastery Challenge
-              </button>
-            ) : (
-              <Link to={`/student/modules/${moduleId}`} className="btn btn-primary">
-                Take Module Quizzes <HiArrowRight />
-              </Link>
-            )}
-            <Link to="/student/adaptive" className="btn btn-secondary">All Modules</Link>
-          </div>
-
-          {/* Direct automated practice CTA */}
-          <div style={{
-            padding: '1.25rem', background: '#f8fafc', borderRadius: 12,
-            border: '1px solid var(--border)', textAlign: 'center',
-          }}>
-            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)', marginBottom: '0.35rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
-              <HiLightningBolt style={{ color: '#f59e0b' }} /> Automated Practice Ready
-            </div>
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '1rem', maxWidth: 460, margin: '0 auto 1rem auto' }}>
-              The adaptation engine will automatically choose the optimal question format (Debugging, Code Tracing, Code Completion, etc.) according to this module.
-            </p>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => load(false, true)}
-              style={{ background: 'var(--green)', color: 'var(--navy)', fontWeight: 800, padding: '0.5rem 1.25rem' }}
-            >
-              <HiLightningBolt /> Start Automated Practice Now
+            <button className="btn btn-primary" onClick={() => fetchLesson(currentTopicId, true)}>
+              <HiRefresh /> Try Again
             </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ── 4. Main Activity Workspace ──────────────────────────────────────────────
-  return (
-    <div style={{ maxWidth: 780, margin: '0 auto', paddingBottom: '3rem' }}>
-      {/* Header breadcrumbs */}
-      <div className="page-header" style={{ marginBottom: '1.25rem' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
-            <Link to="/student/adaptive" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              Adaptive Practice
+            <Link to="/student/adaptive" className="btn btn-secondary">
+              Back to Practice Hub
             </Link>
-            <HiChevronRight style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }} />
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-sub)', fontWeight: 600 }}>
-              {plan?.topicTitle || 'Targeted Intervention'}
-            </span>
           </div>
-          <h1 className="page-title" style={{ fontSize: '1.5rem' }}>{plan?.topicTitle || 'Adaptive Practice'}</h1>
-          <p className="page-subtitle" style={{ margin: 0 }}>
-            {plan?.learningObjective || 'Personalised exercise targeted to your current knowledge state'}
-          </p>
-        </div>
-        <div style={{
-          padding: '0.5rem 1rem', borderRadius: 8, fontSize: '0.82rem', fontWeight: 800,
-          background: `${ac.color}15`, color: ac.color, border: `1px solid ${ac.color}33`,
-        }}>
-          {ac.text}
         </div>
       </div>
+    );
+  }
 
-      {/* Automated Format Indicator */}
-      <AutomatedFormatBadge
-        format={question?.assessmentFormat || plan?.assessmentFormat}
-        isAdvancement={plan?.isAdvancement}
-      />
-
-      {/* Plan badges strip */}
-      {plan && <PlanBadges plan={plan} />}
-
-      {/* Learning Goal */}
-      {plan?.learningObjective && phase !== 'result' && (
-        <div style={{
-          padding: '0.75rem 1rem', background: '#f8fafc',
-          borderRadius: 10, border: '1px solid var(--border)',
-          marginBottom: '1.25rem', fontSize: '0.84rem', color: 'var(--text-sub)', lineHeight: 1.55,
-          display: 'flex', alignItems: 'center', gap: '0.45rem',
-        }}>
-          <HiInformationCircle style={{ color: 'var(--navy)', fontSize: '1.1rem', flexShrink: 0 }} />
-          <span><strong>Goal:</strong> {plan.learningObjective}</span>
-        </div>
-      )}
-
-      {/* ── Phase: Content Review ────────────────────────────────────────────── */}
-      {phase === 'content' && (
-        <>
-          <ContentPanel content={content} plan={plan} />
-          <div style={{ textAlign: 'right' }}>
-            {question ? (
-              <button
-                className="btn btn-primary"
-                onClick={() => setPhase('question')}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: 'var(--green)', color: 'var(--navy)', fontWeight: 800 }}
-              >
-                Continue to Assessment <HiArrowRight />
-              </button>
-            ) : (
-              <Link to="/student/adaptive" className="btn btn-secondary">Back</Link>
-            )}
-          </div>
-        </>
-      )}
-
-      {/* ── Phase: Content Only (when no question was generated) ─────────────── */}
-      {phase === 'content_only' && (
-        <>
-          <div style={{ padding: '0.875rem 1rem', background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 8, marginBottom: '1.25rem', fontSize: '0.85rem', color: '#92400e', display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-            <HiExclamationCircle style={{ flexShrink: 0, marginTop: 1 }} />
-            <span>
-              You have unlocked targeted learning material. Review the lesson below at your own pace.
-            </span>
-          </div>
-          <ContentPanel content={content} plan={plan} />
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <button className="btn btn-primary" onClick={() => load()} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <HiRefresh /> Generate Next Question
-            </button>
-            <Link to="/student/adaptive" className="btn btn-secondary">All Modules</Link>
-          </div>
-        </>
-      )}
-
-      {/* ── Phase: Question Assessment ───────────────────────────────────────── */}
-      {phase === 'question' && question && (
-        <div className="card" style={{ padding: '1.75rem' }}>
-          <QuestionRenderer
-            question={question}
-            answer={answer}
-            onSelect={setAnswer}
-          />
+  // ── Completed All Topics Screen ─────────────────────────────────────────────
+  if (completedAll) {
+    return (
+      <div style={{ maxWidth: 600, margin: '3rem auto' }}>
+        <div className="card" style={{ textAlign: 'center', padding: '2.5rem' }}>
           <div style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            marginTop: '1.75rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border)',
+            width: 64, height: 64, borderRadius: '50%', background: '#f0fdf4',
+            color: 'var(--success)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '2rem', marginBottom: '1rem', border: '2px solid #bbf7d0',
           }}>
-            {content ? (
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => setPhase('content')}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}
-              >
-                ← Review Content
-              </button>
-            ) : <div />}
+            <HiCheckCircle />
+          </div>
+          <h2 style={{ fontWeight: 800, fontSize: '1.4rem', color: 'var(--text)', marginBottom: '0.5rem' }}>
+            Module Practice Complete!
+          </h2>
+          <p style={{ color: 'var(--text-sub)', marginBottom: '1.75rem', lineHeight: 1.6, fontSize: '0.94rem' }}>
+            You have successfully completed all topics in this module. Your topic mastery has been updated.
+          </p>
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
             <button
-              type="button"
               className="btn btn-primary"
-              onClick={handleSubmit}
-              disabled={!canSubmit}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '0.4rem',
-                background: canSubmit ? (question?.assessmentFormat === 'debugging' ? '#ef4444' : 'var(--green)') : undefined,
-                color: canSubmit ? (question?.assessmentFormat === 'debugging' ? '#fff' : 'var(--navy)') : undefined,
-                fontWeight: 800,
-                fontSize: '0.92rem',
-                padding: '0.65rem 1.4rem',
-                boxShadow: canSubmit ? '0 4px 14px rgba(0,0,0,0.15)' : 'none',
+              onClick={() => {
+                const firstTopic = activity?.plan?.topicChain?.[0]?.topicId;
+                fetchLesson(firstTopic || null, true);
               }}
             >
-              {question?.assessmentFormat === 'debugging' ? (
-                <>🐞 Squash Bug & Test Fix (+75 XP)</>
-              ) : question?.assessmentFormat === 'code_completion' ? (
-                <>✍️ Test Code Completion (+50 XP)</>
-              ) : (
-                <>Submit Answer <HiCheckCircle /></>
-              )}
+              <HiRefresh /> Practice Again from Step 1
             </button>
+            <Link to="/student/adaptive" className="btn btn-secondary">
+              <HiBookOpen /> Practice Hub
+            </Link>
           </div>
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {/* ── Phase: Submitting ────────────────────────────────────────────────── */}
-      {phase === 'submitting' && (
-        <div className="loading" style={{ minHeight: 260 }}>
-          <div className="spinner" />
-          <span style={{ fontWeight: 600 }}>Testing your code fix & awarding XP…</span>
+  const plan     = activity?.plan;
+  const content  = activity?.content;
+  const question = activity?.question;
+  const payload  = question?.payload || {};
+  const chain    = plan?.topicChain || [];
+
+  const currentIdx  = chain.findIndex(t => t.topicId?.toString() === plan?.topicId?.toString());
+  const activeIndex = currentIdx >= 0 ? currentIdx : 0;
+  const isLastTopic = currentIdx >= 0 && currentIdx === chain.length - 1;
+  const nextTopic   = (currentIdx >= 0 && currentIdx + 1 < chain.length) ? chain[currentIdx + 1] : null;
+
+  // Resolve 4 Multiple Choice Options cleanly
+  let options = Array.isArray(payload.options) && payload.options.length >= 2
+    ? payload.options
+    : (Array.isArray(question?.options) && question.options.length >= 2 ? question.options : null);
+
+  // Fallback options if missing from backend
+  if (!options && question) {
+    const correctVal = question.correctAnswer || payload.placeholder || 'Correct Implementation';
+    options = [
+      correctVal,
+      'Alternative approach with different syntax',
+      'Leave value uninitialized',
+      'None of the above',
+    ];
+  }
+
+  const parsedQuestion = question ? formatQuestionText(question.questionText) : { prompt: '', code: '' };
+
+  return (
+    <div style={{ maxWidth: 760, margin: '0 auto', paddingBottom: '3.5rem' }}>
+      {/* Top Header / Back Link */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <Link
+          to="/student/adaptive"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.35rem',
+            fontSize: '0.84rem',
+            fontWeight: 700,
+            color: 'var(--text-sub)',
+            textDecoration: 'none',
+          }}
+        >
+          <HiChevronLeft /> Back to Practice Hub
+        </Link>
+        <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+          Self-Paced Practice
+        </span>
+      </div>
+
+      {/* Guided Progress Ribbon */}
+      <StepProgressHeader
+        chain={chain}
+        currentTopicId={plan?.topicId}
+        onSelectTopic={(tid) => fetchLesson(tid, false)}
+      />
+
+      {/* Inline Transition Notice */}
+      {transitioning && (
+        <div style={{
+          textAlign: 'center',
+          padding: '0.5rem',
+          marginBottom: '1rem',
+          background: 'var(--primary-container)',
+          color: 'var(--primary)',
+          borderRadius: 8,
+          fontSize: '0.82rem',
+          fontWeight: 600,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '0.5rem',
+        }}>
+          <div className="spinner" style={{ width: 14, height: 14 }} /> Loading next topic…
         </div>
       )}
 
-      {/* ── Phase: Result & Updated State ────────────────────────────────────── */}
-      {phase === 'result' && outcome && (
-        <ResultPanel
-          outcome={outcome}
-          question={question}
-          nextPlan={outcome.nextPlan}
-          moduleId={moduleId}
-          onNext={(allowAdv) => load(allowAdv, true)}
-        />
+      {/* ── CARD 1: BITE-SIZED CONCEPT ────────────────────────────────────────── */}
+      {content && (
+        <div className="card" style={{ padding: '1.5rem', marginBottom: '1.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.6rem' }}>
+            <span style={{
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+              color: 'var(--primary)',
+              background: 'var(--primary-container)',
+              padding: '0.2rem 0.65rem',
+              borderRadius: 'var(--radius-full)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.3rem',
+            }}>
+              <HiLightBulb /> Core Concept
+            </span>
+          </div>
+
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)', marginBottom: '0.75rem', lineHeight: 1.3 }}>
+            {content.headline || plan?.topicTitle || 'Concept Overview'}
+          </h2>
+
+          {/* Everyday Analogy */}
+          {content.analogy && (
+            <div style={{
+              padding: '0.85rem 1.1rem',
+              background: '#eff6ff',
+              borderLeft: '4px solid #3b82f6',
+              borderRadius: '0 8px 8px 0',
+              marginBottom: '1rem',
+              fontSize: '0.9rem',
+              color: '#1e3a8a',
+              lineHeight: 1.6,
+            }}>
+              <strong>Intuition:</strong> {content.analogy}
+            </div>
+          )}
+
+          {/* Simple Explanation */}
+          {content.explanation && (
+            <p style={{ fontSize: '0.94rem', color: 'var(--text-sub)', lineHeight: 1.7, marginBottom: '1rem' }}>
+              {content.explanation}
+            </p>
+          )}
+
+          {/* Code in Action */}
+          {content.workedExample && (
+            <div style={{ marginBottom: '1rem' }}>
+              <div style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+                Code Example:
+              </div>
+              <pre style={{
+                background: '#0f172a',
+                color: '#38bdf8',
+                padding: '0.95rem 1.1rem',
+                borderRadius: 8,
+                fontSize: '0.88rem',
+                lineHeight: 1.6,
+                fontFamily: 'Consolas, Monaco, monospace',
+                overflowX: 'auto',
+                margin: 0,
+                whiteSpace: 'pre-wrap',
+              }}>
+                {content.workedExample}
+              </pre>
+            </div>
+          )}
+
+          {/* Key Rule Pill */}
+          {content.keyInsight && (
+            <div style={{
+              padding: '0.75rem 1rem',
+              background: '#f0fdf4',
+              border: '1px solid #86efac',
+              borderRadius: 8,
+              fontSize: '0.88rem',
+              color: '#166534',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+            }}>
+              <HiCheckCircle style={{ color: '#16a34a', fontSize: '1.2rem', flexShrink: 0 }} />
+              <span><strong>Key Rule:</strong> {content.keyInsight}</span>
+            </div>
+          )}
+
+          {/* Optional Visual Walkthrough Expander */}
+          {content.animation && (
+            <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
+              <button
+                type="button"
+                onClick={() => setShowAnimation(prev => !prev)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--primary)',
+                  fontSize: '0.82rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  padding: 0,
+                }}
+              >
+                <HiVideoCamera style={{ fontSize: '1rem' }} />
+                <span>{showAnimation ? 'Hide Visual Animation' : 'Watch Visual Animation'}</span>
+              </button>
+              {showAnimation && (
+                <div style={{ marginTop: '0.75rem' }}>
+                  <InteractiveConceptAnimator
+                    animation={content.animation}
+                    topicTitle={plan?.topicTitle}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       )}
 
-      {/* ── Celebratory Reward Modal ────────────────────────────────────────── */}
-      <CelebrationModal
-        isOpen={showCelebration}
-        onClose={() => setShowCelebration(false)}
-        gamification={celebrationData}
-        isBugSquash={question?.assessmentFormat === 'debugging' && outcome?.isCorrect}
-        title={outcome?.isCorrect ? (question?.assessmentFormat === 'debugging' ? 'Bug Squashed!' : 'Challenge Conquered!') : 'Good Effort!'}
-        subtitle={outcome?.isCorrect ? 'You earned XP and made progress on your learning quest.' : 'Keep going! Check the reference solution below to level up.'}
-      />
+      {/* ── CARD 2: TARGETED PRACTICE QUESTION ─────────────────────────────────── */}
+      {question ? (
+        <div className="card" style={{ padding: '1.5rem', marginBottom: '1.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.75rem' }}>
+            <span style={{
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+              color: 'var(--warning)',
+              background: 'var(--warning-bg)',
+              border: '1px solid var(--warning-border)',
+              padding: '0.2rem 0.65rem',
+              borderRadius: 'var(--radius-full)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.3rem',
+            }}>
+              <HiPencilAlt /> Knowledge Check
+            </span>
+          </div>
+
+          <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)', lineHeight: 1.5, marginBottom: '0.85rem' }}>
+            {parsedQuestion.prompt || question.questionText}
+          </h3>
+
+          {/* Code block in question if present */}
+          {(parsedQuestion.code || payload.codeSnippet || payload.buggyCode) && (
+            <pre style={{
+              background: '#0f172a',
+              color: '#38bdf8',
+              padding: '0.9rem 1rem',
+              borderRadius: 8,
+              fontSize: '0.86rem',
+              lineHeight: 1.6,
+              fontFamily: 'monospace',
+              overflowX: 'auto',
+              marginBottom: '1rem',
+              whiteSpace: 'pre-wrap',
+            }}>
+              {payload.codeSnippet || payload.buggyCode || parsedQuestion.code}
+            </pre>
+          )}
+
+          {/* Scenario paragraph if present */}
+          {payload.scenario && (
+            <div style={{
+              padding: '0.8rem 1rem',
+              background: '#f8fafc',
+              borderLeft: '3px solid #64748b',
+              borderRadius: '0 6px 6px 0',
+              fontSize: '0.88rem',
+              color: 'var(--text-sub)',
+              lineHeight: 1.6,
+              marginBottom: '1rem',
+            }}>
+              {payload.scenario}
+            </div>
+          )}
+
+          {/* 4 Multiple Choice Options */}
+          {options && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.25rem' }}>
+              {options.map((opt, i) => {
+                const isSelected = selectedAnswer === opt;
+                const isSubmitted = outcome !== null;
+
+                const isThisCorrect = isSubmitted && (() => {
+                  if (!outcome?.correctAnswer) return false;
+                  const ans = outcome.correctAnswer.toString().trim().toLowerCase();
+                  const curOpt = (opt || '').toString().trim().toLowerCase();
+                  const curLetter = OPTION_LABELS[i].toLowerCase();
+                  return ans === curOpt ||
+                         ans === curLetter ||
+                         ans.startsWith(curLetter + ')') ||
+                         ans.startsWith(curLetter + ':') ||
+                         ans.startsWith(curLetter + '.') ||
+                         (ans.length > 4 && curOpt.includes(ans)) ||
+                         (curOpt.length > 4 && ans.includes(curOpt));
+                })();
+
+                const isThisWrong = isSubmitted && isSelected && !outcome.isCorrect;
+
+                let borderStyle = `1.5px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}`;
+                let bgStyle = isSelected ? 'var(--primary-light)' : '#fff';
+                let textStyle = isSelected ? 'var(--primary-dark)' : 'var(--text)';
+
+                if (isSubmitted) {
+                  if (isThisCorrect) {
+                    borderStyle = '2px solid #22c55e';
+                    bgStyle = '#f0fdf4';
+                    textStyle = '#166534';
+                  } else if (isThisWrong) {
+                    borderStyle = '2px solid #ef4444';
+                    bgStyle = '#fef2f2';
+                    textStyle = '#991b1b';
+                  } else {
+                    bgStyle = '#f8fafc';
+                    textStyle = '#64748b';
+                  }
+                }
+
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    disabled={isSubmitted}
+                    onClick={() => !isSubmitted && setSelectedAnswer(opt)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.85rem',
+                      padding: '0.85rem 1.1rem',
+                      borderRadius: 10,
+                      textAlign: 'left',
+                      border: borderStyle,
+                      background: bgStyle,
+                      cursor: isSubmitted ? 'default' : 'pointer',
+                      transition: 'all 0.15s ease',
+                      boxShadow: isSelected && !isSubmitted ? '0 2px 8px rgba(15,23,42,0.08)' : 'none',
+                    }}
+                  >
+                    <div style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: '50%',
+                      flexShrink: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 700,
+                      fontSize: '0.8rem',
+                      background: isSelected && !isSubmitted ? 'var(--primary)' : 'var(--bg)',
+                      border: `1.5px solid ${isSelected && !isSubmitted ? 'var(--primary)' : 'var(--border)'}`,
+                      color: isSelected && !isSubmitted ? '#fff' : 'var(--text-sub)',
+                    }}>
+                      {isThisCorrect ? (
+                        <HiCheck style={{ fontSize: '0.95rem' }} />
+                      ) : isThisWrong ? (
+                        <HiX style={{ fontSize: '0.95rem' }} />
+                      ) : (
+                        OPTION_LABELS[i]
+                      )}
+                    </div>
+                    <span style={{ fontSize: '0.92rem', color: textStyle, fontWeight: isSelected || isThisCorrect ? 600 : 400, lineHeight: 1.45 }}>
+                      {opt}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* ── CARD 3: FEEDBACK & NEXT TOPIC BUTTON ──────────────────────────── */}
+          {outcome ? (
+            <div>
+              <div style={{
+                padding: '1.1rem',
+                borderRadius: 8,
+                marginBottom: '1.25rem',
+                background: outcome.isCorrect ? '#f0fdf4' : '#fffbeb',
+                border: `1.5px solid ${outcome.isCorrect ? '#86efac' : '#fde68a'}`,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.35rem' }}>
+                  {outcome.isCorrect ? (
+                    <HiCheckCircle style={{ color: '#16a34a', fontSize: '1.35rem' }} />
+                  ) : (
+                    <HiLightBulb style={{ color: '#d97706', fontSize: '1.35rem' }} />
+                  )}
+                  <strong style={{ fontSize: '0.96rem', color: outcome.isCorrect ? '#166534' : '#92400e' }}>
+                    {outcome.isCorrect ? 'Correct! Well done.' : 'Review Concept:'}
+                  </strong>
+                </div>
+
+                {!outcome.isCorrect && outcome.correctAnswer && (
+                  <div style={{ paddingLeft: '1.8rem', marginBottom: '0.35rem', fontSize: '0.9rem', color: '#78350f', fontWeight: 600 }}>
+                    Correct answer: <span style={{ color: '#166534', background: '#dcfce7', padding: '0.15rem 0.45rem', borderRadius: 4 }}>{outcome.correctAnswer}</span>
+                  </div>
+                )}
+
+                {outcome.explanation && (
+                  <p style={{ margin: 0, fontSize: '0.88rem', color: outcome.isCorrect ? '#14532d' : '#78350f', lineHeight: 1.6, paddingLeft: '1.8rem' }}>
+                    {outcome.explanation}
+                  </p>
+                )}
+              </div>
+
+              {/* Big, Obvious Next Button */}
+              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleContinueNext}
+                  style={{
+                    fontSize: '0.95rem',
+                    padding: '0.7rem 1.5rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.45rem',
+                    borderRadius: 'var(--radius)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {isLastTopic ? (
+                    <>
+                      <span>Complete Module & Summary</span>
+                      <HiCheckCircle style={{ fontSize: '1.05rem' }} />
+                    </>
+                  ) : nextTopic ? (
+                    <>
+                      <span>Next Topic: {nextTopic.title}</span>
+                      <HiArrowRight style={{ fontSize: '1rem' }} />
+                    </>
+                  ) : (
+                    <>
+                      <span>Continue to Next Step</span>
+                      <HiArrowRight style={{ fontSize: '1rem' }} />
+                    </>
+                  )}
+                </button>
+
+                {!outcome.isCorrect && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => fetchLesson(plan?.topicId, true)}
+                    style={{ fontSize: '0.85rem', padding: '0.7rem 1rem' }}
+                  >
+                    <HiRefresh /> Try Another Question
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            // Submit Button
+            <div>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleCheckAnswer}
+                disabled={!selectedAnswer || isChecking}
+                style={{
+                  fontSize: '0.92rem',
+                  padding: '0.7rem 1.5rem',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  borderRadius: 'var(--radius)',
+                  cursor: selectedAnswer ? 'pointer' : 'not-allowed',
+                }}
+              >
+                {isChecking ? 'Checking…' : selectedAnswer ? (
+                  <>
+                    <span>Check Answer</span>
+                    <HiCheck style={{ fontSize: '1rem' }} />
+                  </>
+                ) : 'Select an Option Above'}
+              </button>
+            </div>
+          )}
+        </div>
+      ) : (
+        // If no question generated, allow student to simply continue to next topic
+        <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+          <p style={{ color: 'var(--text-sub)', fontSize: '0.92rem', marginBottom: '1.25rem' }}>
+            You have reviewed this concept! Continue to the next topic in the module.
+          </p>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleContinueNext}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', padding: '0.7rem 1.5rem' }}
+          >
+            <span>{isLastTopic ? 'Complete Module' : 'Continue to Next Topic'}</span>
+            <HiArrowRight />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

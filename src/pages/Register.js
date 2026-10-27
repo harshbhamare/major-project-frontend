@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { HiMail, HiLockClosed, HiEye, HiEyeOff, HiAcademicCap, HiSparkles, HiUser, HiUserGroup } from 'react-icons/hi';
+import { HiMail, HiLockClosed, HiEye, HiEyeOff, HiAcademicCap, HiSparkles, HiUser, HiUserGroup, HiExclamationCircle, HiArrowRight } from 'react-icons/hi';
 
 const ROLES = [
   { value: 'student', label: 'Student', icon: HiAcademicCap },
@@ -111,7 +111,8 @@ const Register = () => {
 
           {error && (
             <div className="auth-alert error">
-              <span>⚠</span> {error}
+              <HiExclamationCircle style={{ fontSize: '1.25rem', flexShrink: 0 }} />
+              <span>{error}</span>
             </div>
           )}
 
@@ -195,23 +196,22 @@ const Register = () => {
             {/* Selected role summary */}
             <div
               style={{
-                background: 'var(--green-glow)',
-                border: '1px solid rgba(74,222,128,0.25)',
+                background: 'var(--primary-container)',
+                border: '1px solid rgba(26, 86, 219, 0.2)',
                 borderRadius: 'var(--radius-sm)',
-                padding: '0.6rem 0.875rem',
+                padding: '0.65rem 0.875rem',
                 fontSize: '0.82rem',
-                color: 'var(--text-sub)',
+                color: 'var(--on-primary-container)',
                 marginBottom: '1rem',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.5rem',
               }}
             >
-              {selectedRole && <selectedRole.icon style={{ color: 'var(--green-dark)', fontSize: '1.1rem' }} />}
-              Registering as{' '}
-              <strong style={{ color: 'var(--navy)' }}>
-                {selectedRole?.label}
-              </strong>
+              {selectedRole && <selectedRole.icon style={{ color: 'var(--primary)', fontSize: '1.15rem' }} />}
+              <span>
+                Registering as <strong style={{ color: 'var(--primary)' }}>{selectedRole?.label}</strong>
+              </span>
             </div>
 
             <button type="submit" className="btn-auth" disabled={loading}>
@@ -221,7 +221,10 @@ const Register = () => {
                   Creating account...
                 </>
               ) : (
-                'Create Account →'
+                <>
+                  <span>Create Account</span>
+                  <HiArrowRight style={{ fontSize: '1.1rem' }} />
+                </>
               )}
             </button>
           </form>

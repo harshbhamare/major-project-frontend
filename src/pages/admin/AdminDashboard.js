@@ -41,14 +41,14 @@ const ApiUsagePanel = () => {
   const { todayTotal, weekTotal, monthTotal, totalAll, dailyLimit, todayUsagePercent, byOperation, byUser, errors, dailyBreakdown } = usage;
   const isCritical = todayUsagePercent >= 90;
   const isWarning  = todayUsagePercent >= 70;
-  const barColor   = isCritical ? 'var(--danger)' : isWarning ? 'var(--warning)' : 'var(--green)';
+  const barColor   = isCritical ? 'var(--danger)' : isWarning ? 'var(--warning)' : 'var(--success)';
 
   return (
     <div className="card" style={{ marginBottom: '1.5rem' }}>
       <div className="card-header" style={{ marginBottom: '1.25rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <div style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(74,222,128,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <HiLightningBolt style={{ color: 'var(--green)', fontSize: '0.95rem' }} />
+          <div style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <HiLightningBolt style={{ color: 'var(--primary)', fontSize: '0.95rem' }} />
           </div>
           <h2 className="card-title">Gemini API Usage</h2>
         </div>

@@ -40,7 +40,7 @@ const StepBar = ({ step }) => {
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
               <div style={{
                 width: 34, height: 34, borderRadius: '50%',
-                background: done ? 'var(--green)' : active ? 'var(--navy)' : 'var(--border)',
+                background: done ? 'var(--success)' : active ? 'var(--primary)' : 'var(--border)',
                 color: (done || active) ? '#fff' : 'var(--text-muted)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontWeight: 700, fontSize: '0.85rem', transition: 'all 0.2s',
@@ -49,7 +49,7 @@ const StepBar = ({ step }) => {
               </div>
               <div style={{
                 fontSize: '0.72rem', fontWeight: active ? 700 : 500,
-                color: done ? 'var(--green-dark)' : active ? 'var(--navy)' : 'var(--text-muted)',
+                color: done ? 'var(--success)' : active ? 'var(--primary)' : 'var(--text-muted)',
               }}>
                 {s.label}
               </div>
@@ -57,7 +57,7 @@ const StepBar = ({ step }) => {
             {i < steps.length - 1 && (
               <div style={{
                 flex: 1, height: 2, marginBottom: 18, mx: 4,
-                background: done ? 'var(--green)' : 'var(--border)',
+                background: done ? 'var(--success)' : 'var(--border)',
                 transition: 'background 0.3s',
               }} />
             )}
@@ -186,7 +186,7 @@ const ModuleBuilder = () => {
       zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
       <div style={{ background: 'white', padding: '3rem', borderRadius: 16, textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
-        <HiCheckCircle style={{ fontSize: '3.5rem', color: 'var(--green)', marginBottom: '0.75rem' }} />
+        <HiCheckCircle style={{ fontSize: '3.5rem', color: 'var(--success)', marginBottom: '0.75rem' }} />
         <h2 style={{ fontWeight: 800, fontSize: '1.4rem', marginBottom: '0.4rem' }}>
           Module {id ? 'Updated' : 'Created'}!
         </h2>
@@ -203,7 +203,7 @@ const ModuleBuilder = () => {
           <p className="page-subtitle">Step {step} of 3</p>
         </div>
         {selectedTopics.length > 0 && (
-          <div style={{ background: 'var(--green-glow)', border: '1px solid rgba(74,222,128,0.3)', borderRadius: 8, padding: '0.5rem 1rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--green-dark)' }}>
+          <div style={{ background: 'var(--primary-light)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '0.5rem 1rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--primary-dark)' }}>
             {selectedTopics.length} topic{selectedTopics.length !== 1 ? 's' : ''} selected
           </div>
         )}
@@ -217,7 +217,7 @@ const ModuleBuilder = () => {
       {step === 1 && (
         <div className="card" style={{ maxWidth: 680, margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
-            <HiStar style={{ color: 'var(--green)', fontSize: '1.1rem' }} />
+            <HiStar style={{ color: 'var(--primary)', fontSize: '1.1rem' }} />
             <h2 style={{ fontWeight: 700, fontSize: '1.05rem' }}>Module Details</h2>
           </div>
 
@@ -320,7 +320,7 @@ const ModuleBuilder = () => {
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }} onClick={e => e.stopPropagation()}>
                         {selectedCount > 0 && (
-                          <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--green-dark)', background: 'var(--green-glow)', padding: '0.15rem 0.5rem', borderRadius: 999 }}>
+                          <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--primary-dark)', background: 'var(--primary-light)', padding: '0.15rem 0.5rem', borderRadius: 999 }}>
                             {selectedCount}/{topics.length}
                           </span>
                         )}
@@ -349,17 +349,17 @@ const ModuleBuilder = () => {
                               style={{
                                 display: 'flex', alignItems: 'flex-start', gap: '0.75rem',
                                 padding: '0.75rem 0.875rem',
-                                borderRadius: 8, cursor: 'pointer',
-                                border: `1.5px solid ${isSelected ? 'var(--green)' : 'var(--border)'}`,
-                                background: isSelected ? 'var(--green-glow)' : 'white',
+                                borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+                                border: `1.5px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}`,
+                                background: isSelected ? 'var(--primary-light)' : 'white',
                                 transition: 'all 0.15s',
                               }}
                             >
                               {/* Checkbox */}
                               <div style={{
                                 width: 20, height: 20, borderRadius: 5, flexShrink: 0, marginTop: 1,
-                                border: `2px solid ${isSelected ? 'var(--green)' : 'var(--border)'}`,
-                                background: isSelected ? 'var(--green)' : 'white',
+                                border: `2px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}`,
+                                background: isSelected ? 'var(--primary)' : 'white',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 transition: 'all 0.15s',
                               }}>
@@ -408,7 +408,7 @@ const ModuleBuilder = () => {
         <div>
           <div className="card" style={{ maxWidth: 680, margin: '0 auto', marginBottom: '1.25rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
-              <HiCheckCircle style={{ color: 'var(--green)', fontSize: '1.1rem' }} />
+              <HiCheckCircle style={{ color: 'var(--success)', fontSize: '1.1rem' }} />
               <h2 style={{ fontWeight: 700, fontSize: '1.05rem' }}>Review & Confirm</h2>
             </div>
 
@@ -439,7 +439,7 @@ const ModuleBuilder = () => {
                 </div>
                 <div>
                   <div className="section-label">Topics</div>
-                  <div style={{ fontWeight: 800, fontSize: '1.25rem', color: 'var(--green-dark)' }}>
+                  <div style={{ fontWeight: 800, fontSize: '1.25rem', color: 'var(--primary)' }}>
                     {selectedTopics.length}
                   </div>
                 </div>
@@ -458,7 +458,7 @@ const ModuleBuilder = () => {
                   }}>
                     <div style={{
                       width: 24, height: 24, borderRadius: '50%',
-                      background: 'var(--navy)', color: '#fff',
+                      background: 'var(--primary)', color: '#fff',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: '0.7rem', fontWeight: 700, flexShrink: 0,
                     }}>
@@ -491,10 +491,10 @@ const ModuleBuilder = () => {
               className="btn btn-primary"
               onClick={handleSubmit}
               disabled={saving}
-              style={{ padding: '0.75rem 2rem', background: 'var(--green)', color: 'var(--navy)', minWidth: 160, justifyContent: 'center' }}
+              style={{ padding: '0.75rem 2rem', minWidth: 160, justifyContent: 'center' }}
             >
               {saving
-                ? <><span className="btn-spinner" style={{ borderColor: 'rgba(0,0,0,0.15)', borderTopColor: 'var(--navy)' }} /> Saving…</>
+                ? <><span className="btn-spinner" /> Saving…</>
                 : <><HiCheckCircle /> {id ? 'Update Module' : 'Create Module'}</>
               }
             </button>

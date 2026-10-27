@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
 import {
   HiSparkles, HiCheckCircle, HiFire, HiAcademicCap,
-  HiX, HiArrowRight,
+  HiX, HiArrowRight, HiLightningBolt,
 } from 'react-icons/hi';
+import { MdBugReport, MdEmojiEvents, MdMilitaryTech, MdStars } from 'react-icons/md';
 
 /**
  * CelebrationModal
@@ -41,8 +42,8 @@ const CelebrationModal = ({
     <div style={{
       position: 'fixed',
       top: 0, left: 0, right: 0, bottom: 0,
-      background: 'rgba(15, 23, 42, 0.75)',
-      backdropFilter: 'blur(6px)',
+      background: 'rgba(15, 23, 42, 0.65)',
+      backdropFilter: 'blur(5px)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -58,15 +59,15 @@ const CelebrationModal = ({
       </div>
 
       <div style={{
-        background: '#fff',
-        borderRadius: 20,
+        background: '#ffffff',
+        borderRadius: 'var(--radius-lg)',
         width: '100%',
         maxWidth: 440,
-        padding: '2rem 1.75rem',
+        padding: '2.25rem 2rem',
         textAlign: 'center',
         position: 'relative',
-        boxShadow: '0 20px 40px rgba(0,0,0,0.25)',
-        border: '2px solid rgba(74, 222, 128, 0.4)',
+        boxShadow: 'var(--shadow-xl)',
+        border: '1px solid var(--border)',
         animation: 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
       }}>
         {/* Close button */}
@@ -77,7 +78,7 @@ const CelebrationModal = ({
             top: '1rem',
             right: '1rem',
             background: 'var(--bg)',
-            border: 'none',
+            border: '1px solid var(--border)',
             borderRadius: '50%',
             width: 32,
             height: 32,
@@ -96,17 +97,17 @@ const CelebrationModal = ({
           width: 72,
           height: 72,
           borderRadius: '50%',
-          background: isBugSquash ? '#fef2f2' : 'var(--green-glow)',
-          border: `3px solid ${isBugSquash ? '#ef4444' : 'var(--green)'}`,
+          background: isBugSquash ? 'var(--danger-bg)' : 'var(--primary-container)',
+          border: `2px solid ${isBugSquash ? 'var(--danger-border)' : 'rgba(26,86,219,0.3)'}`,
+          color: isBugSquash ? 'var(--danger)' : 'var(--primary)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '2.5rem',
+          fontSize: '2.2rem',
           margin: '0 auto 1.25rem auto',
-          boxShadow: `0 0 25px ${isBugSquash ? 'rgba(239,68,68,0.3)' : 'rgba(74,222,128,0.4)'}`,
-          animation: 'bounce 1s infinite alternate',
+          boxShadow: `0 8px 20px ${isBugSquash ? 'rgba(239,68,68,0.2)' : 'rgba(26,86,219,0.2)'}`,
         }}>
-          {isBugSquash ? '🐞' : '⚡'}
+          {isBugSquash ? <MdBugReport /> : <HiLightningBolt />}
         </div>
 
         <h2 style={{
@@ -116,9 +117,9 @@ const CelebrationModal = ({
           marginBottom: '0.35rem',
           lineHeight: 1.2,
         }}>
-          {isBugSquash ? 'Bug Squashed!' : title}
+          {isBugSquash ? 'Code Bug Resolved!' : title}
         </h2>
-        <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', marginBottom: '1.5rem' }}>
+        <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', marginBottom: '1.5rem', lineHeight: 1.5 }}>
           {subtitle}
         </p>
 
@@ -131,70 +132,85 @@ const CelebrationModal = ({
         }}>
           {/* XP pill */}
           <div style={{
-            padding: '0.75rem',
-            background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-            border: '1.5px solid #86efac',
-            borderRadius: 12,
+            padding: '0.85rem',
+            background: 'var(--success-bg)',
+            border: '1px solid var(--success-border)',
+            borderRadius: 'var(--radius-sm)',
           }}>
-            <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#166534', textTransform: 'uppercase' }}>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--success)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
               XP Earned
             </div>
             <div style={{
               fontSize: '1.5rem',
               fontWeight: 800,
-              color: '#15803d',
+              color: 'var(--success)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '0.25rem',
+              gap: '0.35rem',
+              marginTop: '0.2rem',
             }}>
-              +{xpEarned} <span style={{ fontSize: '1rem' }}>⚡</span>
+              +{xpEarned} <HiLightningBolt style={{ fontSize: '1.1rem' }} />
             </div>
           </div>
 
           {/* Streak pill */}
           <div style={{
-            padding: '0.75rem',
-            background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
-            border: '1.5px solid #fde68a',
-            borderRadius: 12,
+            padding: '0.85rem',
+            background: 'var(--warning-bg)',
+            border: '1px solid var(--warning-border)',
+            borderRadius: 'var(--radius-sm)',
           }}>
-            <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#92400e', textTransform: 'uppercase' }}>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--warning)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
               Daily Streak
             </div>
             <div style={{
               fontSize: '1.5rem',
               fontWeight: 800,
-              color: '#b45309',
+              color: 'var(--warning)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '0.25rem',
+              gap: '0.35rem',
+              marginTop: '0.2rem',
             }}>
-              {streak} <span style={{ fontSize: '1.1rem' }}>🔥</span>
+              {streak} <HiFire style={{ fontSize: '1.25rem' }} />
             </div>
           </div>
         </div>
 
         {/* Level Banner */}
         <div style={{
-          padding: '0.65rem 1rem',
-          background: 'var(--navy)',
-          color: '#fff',
-          borderRadius: 10,
+          padding: '0.75rem 1rem',
+          background: 'var(--bg)',
+          border: '1px solid var(--border)',
+          color: 'var(--text)',
+          borderRadius: 'var(--radius-sm)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           marginBottom: newBadges.length > 0 ? '1rem' : '1.5rem',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textAlign: 'left' }}>
-            <span style={{ fontSize: '1.2rem' }}>🎖️</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', textAlign: 'left' }}>
+            <div style={{
+              width: 32,
+              height: 32,
+              borderRadius: '50%',
+              background: 'var(--primary-container)',
+              color: 'var(--primary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '1.15rem',
+            }}>
+              <MdMilitaryTech />
+            </div>
             <div>
-              <div style={{ fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700 }}>Current Level</div>
-              <div style={{ fontSize: '0.88rem', fontWeight: 800 }}>Level {level}: {levelTitle}</div>
+              <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Current Level</div>
+              <div style={{ fontSize: '0.88rem', fontWeight: 700 }}>Level {level}: {levelTitle}</div>
             </div>
           </div>
-          <div style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--green)' }}>
+          <div style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--primary)' }}>
             {totalXp} XP
           </div>
         </div>
@@ -202,22 +218,34 @@ const CelebrationModal = ({
         {/* New Badges if any */}
         {newBadges && newBadges.length > 0 && (
           <div style={{
-            padding: '0.75rem 1rem',
-            background: '#eff6ff',
-            border: '1.5px solid #93c5fd',
-            borderRadius: 12,
+            padding: '0.85rem 1rem',
+            background: 'var(--primary-container)',
+            border: '1px solid rgba(26, 86, 219, 0.25)',
+            borderRadius: 'var(--radius-sm)',
             marginBottom: '1.5rem',
             textAlign: 'left',
           }}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#1d4ed8', textTransform: 'uppercase', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-              <HiSparkles /> New Achievement Unlocked!
+            <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <HiSparkles /> Achievement Unlocked
             </div>
             {newBadges.map((badge, idx) => (
-              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <span style={{ fontSize: '1.5rem' }}>{badge.icon || '🏆'}</span>
+              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <div style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: '#ffffff',
+                  color: 'var(--primary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.15rem',
+                }}>
+                  <MdEmojiEvents />
+                </div>
                 <div>
-                  <div style={{ fontWeight: 800, fontSize: '0.88rem', color: '#1e3a8a' }}>{badge.title}</div>
-                  <div style={{ fontSize: '0.75rem', color: '#3b82f6' }}>{badge.description}</div>
+                  <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text)' }}>{badge.title}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-sub)' }}>{badge.description}</div>
                 </div>
               </div>
             ))}
@@ -230,15 +258,13 @@ const CelebrationModal = ({
           className="btn btn-primary"
           style={{
             width: '100%',
-            justifyContent: 'center',
-            fontSize: '0.95rem',
-            padding: '0.75rem',
-            background: 'var(--navy)',
-            color: '#fff',
-            fontWeight: 700,
+            height: 44,
+            fontSize: '0.92rem',
+            fontWeight: 600,
           }}
         >
-          Continue Quest <HiArrowRight />
+          <span>Continue Learning</span>
+          <HiArrowRight style={{ fontSize: '1.05rem' }} />
         </button>
       </div>
     </div>
