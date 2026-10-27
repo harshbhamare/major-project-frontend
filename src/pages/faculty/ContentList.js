@@ -17,7 +17,12 @@ const ContentList = () => {
   const [processError, setProcessError] = useState({});
 
   const fetchContent = () =>
-    api.get('/content').then(({ data }) => { setContent(data); setLoading(false); });
+    api.get('/content')
+      .then(({ data }) => { setContent(data); setLoading(false); })
+      .catch(err => {
+        console.error('Failed to load content:', err);
+        setLoading(false);
+      });
 
   useEffect(() => { fetchContent(); }, []);
 

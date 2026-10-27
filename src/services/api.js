@@ -21,12 +21,24 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
+    const url = err.config?.url || '';
+    const status = err.response?.status;
+    const method = err.config?.method?.toUpperCase() || 'GET';
+    const serverMsg = err.response?.data?.message;
+
+    if (serverMsg) {
+      err.message = `${serverMsg} (${method} ${url} -> ${status})`;
+    }
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.error(`[API Error ${status || 'Network'}] ${method} ${url}:`, err.response?.data || err.message);
+    }
+
     // Only redirect to login on 401 for authenticated routes,
     // NOT for the login/register endpoints themselves.
-    const url = err.config?.url || '';
     const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/register');
 
-    if (err.response?.status === 401 && !isAuthEndpoint) {
+    if (status === 401 && !isAuthEndpoint) {
       localStorage.removeItem('user');
       window.location.href = '/login';
     }

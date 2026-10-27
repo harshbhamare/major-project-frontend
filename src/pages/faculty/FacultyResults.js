@@ -479,12 +479,17 @@ const FacultyResults = () => {
   // Load modules on mount
   // Load modules on mount
   useEffect(() => {
-    api.get('/modules').then(({ data }) => {
-      const published = data || [];
-      setModules(published);
-      // Auto-load cross-curriculum overview by default for maximum faculty productivity
-      fetchResults('all');
-    });
+    api.get('/modules')
+      .then(({ data }) => {
+        const published = data || [];
+        setModules(published);
+        // Auto-load cross-curriculum overview by default for maximum faculty productivity
+        fetchResults('all');
+      })
+      .catch(err => {
+        console.error('Failed to load modules:', err);
+        setLoading(false);
+      });
   }, []);
 
   const fetchResults = async (moduleId) => {

@@ -13,7 +13,12 @@ const AdminUsers = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchUsers = () => {
-    api.get('/admin/users').then(({ data }) => { setUsers(data); setLoading(false); });
+    api.get('/admin/users')
+      .then(({ data }) => { setUsers(data); setLoading(false); })
+      .catch(err => {
+        console.error('Failed to load users:', err);
+        setLoading(false);
+      });
   };
 
   useEffect(() => { fetchUsers(); }, []);

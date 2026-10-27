@@ -7,7 +7,12 @@ const ModuleList = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchModules = () => {
-    api.get('/modules').then(({ data }) => { setModules(data); setLoading(false); });
+    api.get('/modules')
+      .then(({ data }) => { setModules(data); setLoading(false); })
+      .catch(err => {
+        console.error('Failed to load modules:', err);
+        setLoading(false);
+      });
   };
 
   useEffect(() => { fetchModules(); }, []);

@@ -89,6 +89,9 @@ const TopicEditor = () => {
     api.get(`/content/${id}/topics`).then(({ data }) => {
       setTopics(data);
       setLoading(false);
+    }).catch(err => {
+      console.error('Failed to load topics:', err);
+      setLoading(false);
     });
   };
 
